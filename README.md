@@ -26,7 +26,7 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
 2. Download and unzip latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip)
 3. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
-4. Run the gradio interface with ```python3 app.py```
+4. Run the streamlit interface with ```streamlit run app.py```
 
 ### Hugging face (last resort, simple)
 Go [here](https://huggingface.co/spaces/CodingCoda/AstroSleuth). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
@@ -37,13 +37,9 @@ Please see [details](https://github.com/Aveygo/AstroSleuth/blob/master/results/d
 
 ## Known issues
 
-When comparing against BlurXterminator, the 400% more pixel per pixel does give it a little more style, but definitely less detail with more artifacts. 
+Results are now more comparable with BlurXterminator after training improvements (see [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md)). AstroSleuthV2 weights will be on the hugging face repo, but not automatically downloaded for the time being.
 
-Astrosleuth also likes to add stars wherever possible, including "negative" stars? New training with more blurring and less emphasis on jpg artifacts running right now.
-
-For future me, perhaps people may enjoy a model finetuned for not generating realistic *looking* images, but accurate ones (raise that mse up amirite?).
-
-Gradio runs extremely slow, new ui + onnx?
+Currently investigating a "zero-knowledge" solution.
 
 ## Concerns and Personal Notes
 
