@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.websocket_headers import _get_websocket_headers
 from PIL import Image
-import time, threading
+import time, threading, io
 
 from file_queue import FileQueue
 from main import AstroSleuth
@@ -87,14 +87,13 @@ class App:
                 queue_box.empty()
             info.empty()
 
-            st.success('Done! Loading result... (To download, right-click image -> Save image as)', icon="🎉")
+            st.success('Done! Loading result... (Please use download button to save image)', icon="🎉")
             
-            # Uncomment to get download button (not working on huggingface?)
-            #b = io.BytesIO()
-            #file_type = file.name.split(".")[-1].upper()
-            #file_type = "JPEG" if not file_type in ["JPEG", "PNG"] else file_type
-            #image.save(b, format=file_type)
-            #st.download_button("Download", b.getvalue(), file.name, "image/" + file_type)
+            b = io.BytesIO()
+            file_type = file.name.split(".")[-1].upper()
+            file_type = "JPEG" if not file_type in ["JPEG", "PNG"] else file_type
+            image.save(b, format=file_type)
+            st.download_button("Download", b.getvalue(), file.name, "image/" + file_type)
 
             st.image(image, caption='Upscaled preview', use_column_width=True)
             self.close()

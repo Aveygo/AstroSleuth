@@ -85,7 +85,6 @@ class AstroSleuth():
             tile_data, x, y, w, h, p = tile
             result.paste(Image.fromarray(tile_data), (x*self.scale, y*self.scale))
             yield p
-
         result = result.resize((original_width * self.scale, original_height * self.scale), resample=Image.Resampling.BICUBIC)
         yield result
         
