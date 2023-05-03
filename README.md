@@ -1,15 +1,3 @@
----
-title: AstroSleuth
-emoji: 🌖
-colorFrom: pink
-colorTo: yellow
-sdk: streamlit
-sdk_version: 1.17.0
-app_file: app.py
-pinned: false
-license: gpl-2.0
----
-
 # AstroSleuth
 
 <p align="center">
@@ -61,3 +49,15 @@ I will continue to do so. Ask for any improvements and I will likely impliment t
 For the redditors, this tool is presented as is, free as long as it stays free, I cannot convey though words how much I dont care that its not "scientifically accurate".
 
 <!---If it wasnt for https://www.rc-astro.com/ I wouldnt have built up the effort though spite to go though redeveloping this project. "Does BlurXTerminator fabricate detail? No" is full of s**t, when I got s**t for being honest and saying my model does-->
+
+---
+title: AstroSleuth
+emoji: 🌖
+colorFrom: pink
+colorTo: yellow
+sdk: streamlit
+sdk_version: 1.17.0
+app_file: app.py
+pinned: false
+license: gpl-2.0
+---
