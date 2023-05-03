@@ -31,7 +31,7 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 ## Running
 
 ### Hugging face - Easiest
-Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
+Go [here](https://aveygo-astrosleuth.hf.space/). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
 
 ### Colab - A bit annoying to work with
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
