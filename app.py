@@ -2,12 +2,14 @@ import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.websocket_headers import _get_websocket_headers
 from PIL import Image
-import time, threading, io
+import time, threading, io, os
 
 from file_queue import FileQueue
 from main import AstroSleuth
 
-WARNING_SIZE = 4096 # ~7gb
+IS_HF = not "HF_HOME" in os.environ
+WARNING_SIZE = 1024 if IS_HF else 4096 
+MAX_SIZE = 2048 if IS_HF else None
 
 class App:
     def __init__(self):
@@ -47,7 +49,7 @@ class App:
     
     def render(self):
         st.title('AstroSleuth')
-        st.subheader("Upscale astrophotography images with AI")
+        st.subheader("Upscale deep space targets with AI")
 
         with st.form("my-form", clear_on_submit=True):
             file = st.file_uploader("FILE UPLOADER", type=["png", "jpg", "jpeg"])
@@ -56,8 +58,15 @@ class App:
         if submitted and file is not None:
             image = Image.open(file)
             
-            if image.width > WARNING_SIZE or image.height > WARNING_SIZE:
-                st.info("Woah, that image is quite large! You may encounter memory issues...", icon="🕒")
+            if MAX_SIZE is not None and (image.width > MAX_SIZE or image.height > MAX_SIZE):
+                st.warning("Your image was resized to save on resources! To avoid this, run AstroSleuth with colab or locally: https://github.com/Aveygo/AstroSleuth#running", icon="⚠️")
+                if image.width > image.height:
+                    image = image.resize((MAX_SIZE, MAX_SIZE * image.height // image.width))
+                else:
+                    image = image.resize((MAX_SIZE * image.width // image.height, MAX_SIZE))
+
+            elif image.width > WARNING_SIZE or image.height > WARNING_SIZE:
+                st.info("Woah, that image is quite large! You may have to wait a while and/or get unexpected errors!", icon="🕒")
 
             self.queue = FileQueue()
             
@@ -87,7 +96,7 @@ class App:
                 queue_box.empty()
             info.empty()
 
-            st.success('Done! Loading result... (Please use download button to save image)', icon="🎉")
+            st.success('Done! Loading result... (Please use download button to save result for the highest resolution)', icon="🎉")
             
             b = io.BytesIO()
             file_type = file.name.split(".")[-1].upper()

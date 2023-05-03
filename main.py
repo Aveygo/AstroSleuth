@@ -1,20 +1,29 @@
-import math, numpy as np, requests, os
+import math, numpy as np, requests, os, time
 from PIL import Image
 import onnxruntime
+from astrodetect import AstroDetect
 
 class AstroSleuth():
-    def __init__(self, tile_size=256, tile_pad=16, src="LATEST"):
+    def __init__(self, tile_size=256, tile_pad=16, src="models/astrosleuth/model.onnx", use_detector=True):
         self.tile_size = tile_size
         self.tile_pad = tile_pad
-        if src == "LATEST":
-            src = "model.onnx"
-            if not os.path.exists("model.onnx"):
-                with open("model.onnx", 'wb') as f:
-                    f.write(requests.get("https://t.ly/fJ3D", allow_redirects=True, headers={"User-Agent":""}).content)
-           
+
+        self.download("https://t.ly/fJ3D", src)
+
+        self.detector = None
+        if use_detector:
+            self.download("https://t.ly/NiNM", "models/astrodetect/astrodetect.onnx")
+            self.download("https://t.ly/RZ_Y", "models/realesr/realesr.onnx")
+            self.detector:AstroDetect = AstroDetect()
+
         self.src = src
         self.scale = 4
         self.progress = None
+    
+    def download(self, src, dst):
+        if not os.path.exists(dst):
+            with open(dst, 'wb') as f:
+                f.write(requests.get(src, allow_redirects=True, headers={"User-Agent":""}).content)
 
     def model(self, x: np.ndarray):
         return self.onnx_model.run([self.output_name], {self.input_name: x})[0]
@@ -71,7 +80,16 @@ class AstroSleuth():
         yield None
 
     def enhance_with_progress(self, image:Image) -> Image:
-        self.onnx_model = onnxruntime.InferenceSession(self.src, providers=["CUDAExecutionProvider"])
+
+        model_src = self.src
+        if self.detector is not None:
+            a = time.time()
+            result = self.detector.is_space(image)
+            print(f"Detection took {time.time() - a:.2f} seconds, result: {result}")
+            if not result:
+                model_src = "models/realesr/realesr.onnx"
+
+        self.onnx_model = onnxruntime.InferenceSession(model_src, providers=["CUDAExecutionProvider"])
         self.input_name = self.onnx_model.get_inputs()[0].name
         self.output_name = self.onnx_model.get_outputs()[0].name
 
