@@ -18,18 +18,25 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 
 ## Running
 
-### Colab (recommended)
+### Hugging face - Easiest
+Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
+
+### Colab - A bit annoying to work with
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
 2. Enjoy!
 
-### Locally (best, complicated)
+### Locally - Best but complicated
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
 2. Download and unzip latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip)
 3. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
 4. Run the streamlit interface with ```streamlit run app.py```
 
-### Hugging face (last resort, simple)
-Go [here](https://huggingface.co/spaces/CodingCoda/AstroSleuth). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
+### Docker - Best option if you already have it
+1. Download [docker](https://www.docker.com/)
+2. Run: ```wsl --update```
+3. Open Docker Desktop
+4. Run ```docker run -it -p 8501:8501 --platform=linux/amd64 registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py```
+5. Go to [127.0.0.1:8501](http://127.0.0.1:8501/)
 
 ## Extra information
 
@@ -48,8 +55,6 @@ I will continue to do so. Ask for any improvements and I will likely impliment t
 
 For the redditors, this tool is presented as is, free as long as it stays free, I cannot convey though words how much I dont care that its not "scientifically accurate".
 
-<!---If it wasnt for https://www.rc-astro.com/ I wouldnt have built up the effort though spite to go though redeveloping this project. "Does BlurXTerminator fabricate detail? No" is full of s**t, when I got s**t for being honest and saying my model does-->
-
 ---
 title: AstroSleuth
 emoji: 🌖
@@ -61,3 +66,5 @@ app_file: app.py
 pinned: false
 license: gpl-2.0
 ---
+
+<!---If it wasnt for https://www.rc-astro.com/ I wouldnt have built up the effort though spite to go though redeveloping this project. "Does BlurXTerminator fabricate detail? No" is full of s**t, when I got s**t for being honest and saying my model does-->
