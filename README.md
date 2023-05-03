@@ -1,5 +1,3 @@
-# AstroSleuth
-
 ---
 title: AstroSleuth
 emoji: 🌖
@@ -11,6 +9,8 @@ app_file: app.py
 pinned: false
 license: gpl-2.0
 ---
+
+# AstroSleuth
 
 <p align="center">
   <img src="https://media.githubusercontent.com/media/Aveygo/AstroSleuth/master/sample.png">
