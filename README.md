@@ -1,3 +1,15 @@
+---
+title: AstroSleuth
+emoji: 🌖
+colorFrom: pink
+colorTo: yellow
+sdk: streamlit
+sdk_version: 1.17.0
+app_file: app.py
+pinned: false
+license: gpl-2.0
+---
+
 # AstroSleuth
 
 <p align="center">
