@@ -8,7 +8,8 @@ class AstroSleuth():
         self.tile_size = tile_size
         self.tile_pad = tile_pad
 
-        self.download("https://t.ly/fJ3D", src)
+        self.download("https://t.ly/fJ3D", src) # AstroSleuthV1
+        #self.download("https://t.ly/2SAQ", src) # AstroSleuthV2
 
         self.detector = None
         if use_detector:
