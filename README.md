@@ -68,7 +68,12 @@ Please see [details](https://github.com/Aveygo/AstroSleuth/blob/master/results/d
 
 Results are now more comparable with BlurXterminator after training improvements (see [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md)). AstroSleuthV2 weights will be on the hugging face repo, but not automatically downloaded for the time being.
 
-Currently investigating a "zero-knowledge" solution.
+~~Currently investigating a "zero-knowledge" solution.~~
+No "real" zero-knowledge solution seems very practical. Still on the lookout for the time being.
+
+The biggest concern currently is the discriminator failing to detect real from fakes, regardless of it's weight on the generator. This results in AstroSleuthV2 adding a lot more stars than it should (supposably also due to the new feature model having some effect), and overall not performing to my standards. A fix is currently underway but will take a while to train/find best training parameters, and maybe needs a new discriminator altogether.
+
+Another issue is star diffraction spikes being wavy or "spotty". A better disscriminator will help, but a dataset more focused on diffraction spikes is much more optimal. Possible synthetic dataset in the works currently.
 
 ## Concerns and Personal Notes
 
