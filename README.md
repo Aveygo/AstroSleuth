@@ -50,15 +50,18 @@ Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hu
 4. Run ```docker run -it -p 8501:8501 --platform=linux/amd64 registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py```
 5. Go to [127.0.0.1:8501](http://127.0.0.1:8501/)
 
-### GPU Acceleration
-All the above methods rely on onnxruntime for infernece, which only supports the cpu by default. For gpu support (cuda 11 and below), you can run:
-```
-pip3 uninstall onnxruntime
-```
+### GPU Acceleration (ONNX)
+Please note, this method only works if you have cuda version 11!
+
+```pip3 uninstall onnxruntime```
+
 and then
-```
-pip3 install onnxruntime-gpu
-```
+
+```pip3 install onnxruntime-gpu```
+
+### GPU Acceleration (Pytorch)
+1. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
+2. Follow the "run locally" instructions, but run with ```streamlit run app.py -- --gpu --torch``` for step 4
 
 ## Extra information
 

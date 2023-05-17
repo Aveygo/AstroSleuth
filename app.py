@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.websocket_headers import _get_websocket_headers
 from PIL import Image
-import time, threading, io, os
+import time, threading, io, os, sys
 
 from file_queue import FileQueue
 from main import AstroSleuth
@@ -10,6 +10,20 @@ from main import AstroSleuth
 IS_HF = not "HF_HOME" in os.environ
 WARNING_SIZE = 1024 if IS_HF else 4096 
 MAX_SIZE = 2048 if IS_HF else None
+USE_DETECTOR = True if IS_HF else False
+
+#USE_GPU = len([x for x in sys.argv if x == "--use-gpu"]) > 0
+#USE_TORCH = len([x for x in sys.argv if x == "--use-torch"]) > 0
+
+import argparse
+
+parser = argparse.ArgumentParser(description='AstroSleuth')
+parser.add_argument('--gpu', action='store_true', help='Use GPU')
+parser.add_argument('--torch', action='store_true', help='Use Torch')
+
+args = parser.parse_args()
+USE_GPU = args.gpu
+USE_TORCH = args.torch
 
 class App:
     def __init__(self):
@@ -21,7 +35,8 @@ class App:
         self.upscaling = True
         bar = st.progress(0)
         
-        model = AstroSleuth()
+        model = AstroSleuth(use_detector=USE_DETECTOR, use_onnxruntime=not USE_TORCH, device="cuda" if USE_GPU else "cpu")
+
         result = None
         for i in model.enhance_with_progress(image):
             if type(i) == float:
