@@ -25,43 +25,40 @@ Sick of the commercialisation of deep space tools, I wanted a solution that can 
 
 I started this project a regrettably long time ago. A lot has changed since then. I tried to share my work, got burned, removed it, perfected it, and fell into a well of "is it good enough".
 
-I present my original model, a finetuned realesr-gan model trained on 15k images of astrophotography. It is behind my works on [reddit](https://www.reddit.com/user/CodingCoda), my [youtube](https://www.youtube.com/channel/UCHode4WV0hteze-ZDEG5atQ) attempt
+I present my original idea, a finetuned realesr-gan model trained on 15k images of astrophotography. It is behind my works on [reddit](https://www.reddit.com/user/CodingCoda), my [youtube](https://www.youtube.com/channel/UCHode4WV0hteze-ZDEG5atQ) attempt
 and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleuth-image-denoiser-upscaler/), and I hope it will suit you well.
 
 ## Running
 
-### Locally - Best but complicated
-1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
-2. Download and unzip latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip)
-3. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
-4. Run the streamlit interface with ```streamlit run app.py```
-
-### Hugging face - Easiest
+### Hugging face - Recommended for single use
 Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
 
-### Colab - A bit annoying to work with
+### Colab - Might be a little complicated, but best method by far 
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
 2. Enjoy!
 
-### Docker - Best option if you already have it
+### Docker - Best option ONLY if you already have it
 1. Download [docker](https://www.docker.com/)
 2. Run: ```wsl --update```
 3. Open Docker Desktop
 4. Run ```docker run -it -p 8501:8501 --platform=linux/amd64 registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py```
 5. Go to [127.0.0.1:8501](http://127.0.0.1:8501/)
 
-### GPU Acceleration (ONNX)
-Please note, this method only works if you have cuda version 11!
+### Locally - Fairly complicated, is the "proper" way to self-host
+1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
+2. Download and unzip latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip)
+3. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
+4. Run the streamlit interface with ```streamlit run app.py```
 
-```pip3 uninstall onnxruntime```
-
-and then
-
-```pip3 install onnxruntime-gpu```
-
-### GPU Acceleration (Pytorch)
+### Local - GPU Acceleration (Pytorch)
 1. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
 2. Follow the "run locally" instructions, but run with ```streamlit run app.py -- --gpu --torch``` for step 4
+
+### Local - GPU Acceleration (ONNX)
+Please note, this method only works if you have cuda version 11, check your drivers first!
+
+1. Run ```pip3 uninstall onnxruntime```
+2. and then ```pip3 install onnxruntime-gpu```
 
 ## Extra information
 
