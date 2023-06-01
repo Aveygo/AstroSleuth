@@ -2,10 +2,10 @@ import math, numpy as np, requests, os, time
 from PIL import Image
 import onnxruntime
 from astrodetect import AstroDetect
-from network import Network
 
 try:
     import torch
+    from network import Network
     TORCH_INSTALLED = True
 except:
     TORCH_INSTALLED = False
