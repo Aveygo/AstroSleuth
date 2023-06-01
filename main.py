@@ -15,12 +15,12 @@ class AstroSleuth():
         self.tile_size = tile_size
         self.tile_pad = tile_pad
         self.device = device
+        self.use_onnxruntime = use_onnxruntime
 
         if not TORCH_INSTALLED and not self.use_onnxruntime:
             print("pytorch not installed! using onnxruntime")
             use_onnxruntime = True
-
-        self.use_onnxruntime = use_onnxruntime
+        
 
         if self.use_onnxruntime:
             self.model_pth = os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")
