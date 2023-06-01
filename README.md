@@ -78,7 +78,7 @@ Another issue is star diffraction spikes being wavy or "spotty". A better disscr
 ## Concerns and Personal Notes
 
 Its not a understatement that this tool has changed my life. It was my first machine learning project. I even built full-stack applications searching for the perfect way to share my work.
-I will continue to do so. Ask for any improvements and I will likely impliment them. I am begging for an excuss to work on it so any feedback is appreciated. I am interested in creating a Photoshop/Pixinsight plugin if thats what even a single person wants, just open a git issue [here](https://github.com/Aveygo/AstroSleuth/issues) and I'll see to it.
+I will continue to do so. Ask for any improvements and I will likely impliment them. I am begging for an excuse to work on it so any feedback is appreciated. I am interested in creating a Photoshop/Pixinsight plugin if thats what even a single person wants, just open a git issue [here](https://github.com/Aveygo/AstroSleuth/issues) and I'll see to it.
 
 For the redditors, this tool is presented as is, free as long as it stays free, I cannot convey though words how much I dont care that its not "scientifically accurate".
 
