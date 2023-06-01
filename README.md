@@ -30,10 +30,10 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 
 ## Running
 
-### Hugging face - Recommended for single use
-Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus, so large images may take a very long time, even timing out.
+### Hugging face - Recommended for testing/playing around
+1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus and you'll likely be sharing, so large images may take a very long time, even timing out.
 
-### Colab - Might be a little complicated, but best method by far 
+### Colab - Might be a little complicated, but the best method by far 
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
 2. Enjoy!
 
@@ -46,7 +46,7 @@ Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hu
 
 ### Locally - Fairly complicated, is the "proper" way to self-host
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
-2. Download and unzip latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip)
+2. Download and unzip latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
 3. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
 4. Run the streamlit interface with ```streamlit run app.py```
 
