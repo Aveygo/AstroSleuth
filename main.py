@@ -23,12 +23,14 @@ class AstroSleuth():
         self.use_onnxruntime = use_onnxruntime
 
         if self.use_onnxruntime:
-            self.download("https://t.ly/fJ3D", os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")) # AstroSleuthV1
-            #self.download("https://t.ly/2SAQ", os.path.join(wrk_dir, "astrosleuth_v2_onnx/model.onnx")) # AstroSleuthV1
             self.model_pth = os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")
+            #self.download("https://t.ly/fJ3D", os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")) # AstroSleuthV1 (ONNX)
+            self.download("https://t.ly/2SAQ", os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")) # AstroSleuthV2 (ONNX)
+            
         else:
-            self.download("https://t.ly/_bgi", os.path.join(wrk_dir, "astrosleuth_torch/model.pth")) # AstroSleuthV1 (Torch)
             self.model_pth = os.path.join(wrk_dir, "astrosleuth_torch/model.pth")
+            #self.download("https://t.ly/_bgi", os.path.join(wrk_dir, "astrosleuth_torch/model.pth")) # AstroSleuthV1 (Torch)
+            self.download("https://t.ly/9uQA", os.path.join(wrk_dir, "astrosleuth_torch/model.pth")) # AstroSleuthV2 (Torch)
 
         self.detector = None
         if use_detector:

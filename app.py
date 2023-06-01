@@ -7,13 +7,13 @@ import time, threading, io, os, sys
 from file_queue import FileQueue
 from main import AstroSleuth
 
-IS_HF = not "HF_HOME" in os.environ
+IS_HF = "HF_HOME" in os.environ
 WARNING_SIZE = 1024 if IS_HF else 4096 
 MAX_SIZE = 2048 if IS_HF else None
 USE_DETECTOR = True if IS_HF else False
 
-#USE_GPU = len([x for x in sys.argv if x == "--use-gpu"]) > 0
-#USE_TORCH = len([x for x in sys.argv if x == "--use-torch"]) > 0
+if USE_DETECTOR:
+    print("WARNING: Space detector is being used! It's possible for a space image to be upscaled with the incorrect model if it gets misclassified!")
 
 import argparse
 

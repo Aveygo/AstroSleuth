@@ -7,7 +7,7 @@ class AstroDetect:
     # eg: moon -> False, galaxy -> True, dog -> False, star -> True
 
     def __init__(self):
-        self.net = onnxruntime.InferenceSession("models/astrodetect/astrodetect.onnx")
+        self.net = onnxruntime.InferenceSession("models/astrodetect/astrodetect.onnx", providers=['CPUExecutionProvider'])
         self.img_size = (227, 227)
     
     def is_space(self, img:Image):
