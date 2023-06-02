@@ -16,6 +16,8 @@ USE_DETECTOR = True if IS_HF else False
 
 if IS_HF:
     print("Running in huggingface environment!")
+else:
+    print(listdir('/home/'))
 
 if USE_DETECTOR:
     print("WARNING: Space detector is being used! It's possible for a space image to be upscaled with the incorrect model if it gets misclassified!")
