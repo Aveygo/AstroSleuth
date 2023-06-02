@@ -9,15 +9,13 @@ from main import AstroSleuth
 
 from os import listdir
 
-IS_HF = len(listdir('/home/')) == 0
+IS_HF = listdir('/home/')[0] == 'user'
 WARNING_SIZE = 1024 if IS_HF else 4096 
 MAX_SIZE = 2048 if IS_HF else None
 USE_DETECTOR = True if IS_HF else False
 
 if IS_HF:
     print("Running in huggingface environment!")
-else:
-    print(listdir('/home/'))
 
 if USE_DETECTOR:
     print("WARNING: Space detector is being used! It's possible for a space image to be upscaled with the incorrect model if it gets misclassified!")
