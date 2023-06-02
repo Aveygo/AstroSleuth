@@ -12,7 +12,16 @@ class AstroDetect:
     
     def is_space(self, img:Image):
         img = img.resize(self.img_size)
-        img = np.array(img)[:,:,:3]
+        
+        img = np.array(img)
+        
+        # Convert grayscale to RGB, or remove alpha channel        
+        if len(img.shape) == 2:
+            img = np.expand_dims(img, axis=2)
+            img = np.repeat(img, 3, axis=2)
+        else:
+            img = img[:,:,:3]
+
         img = np.rollaxis(img, 2, 0)
         img = img.astype(np.float32) / 255
         img = np.expand_dims(img, axis=0)
