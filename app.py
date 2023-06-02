@@ -12,6 +12,15 @@ WARNING_SIZE = 1024 if IS_HF else 4096
 MAX_SIZE = 2048 if IS_HF else None
 USE_DETECTOR = True if IS_HF else False
 
+if IS_HF:
+    print("Running in huggingface environment!")
+else:
+    # Hugging face detection testing
+    from os import listdir
+    from os.path import isfile, join
+    onlyfiles = [f for f in listdir('/home/') if isfile(join("/home/", f))]
+    print(onlyfiles)
+
 if USE_DETECTOR:
     print("WARNING: Space detector is being used! It's possible for a space image to be upscaled with the incorrect model if it gets misclassified!")
 
