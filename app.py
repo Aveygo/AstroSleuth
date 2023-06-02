@@ -7,7 +7,7 @@ import time, threading, io, os, sys
 from file_queue import FileQueue
 from main import AstroSleuth
 
-IS_HF = "HF_HOME" in os.environ
+IS_HF = os.getenv("HF_HOME") is not None
 WARNING_SIZE = 1024 if IS_HF else 4096 
 MAX_SIZE = 2048 if IS_HF else None
 USE_DETECTOR = True if IS_HF else False
