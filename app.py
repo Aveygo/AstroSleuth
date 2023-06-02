@@ -9,7 +9,10 @@ from main import AstroSleuth
 
 from os import listdir
 
-IS_HF = listdir('/home/')[0] == 'user'
+try:
+    IS_HF = listdir('/home/')[0] == 'user'
+except:
+    IS_HF = False
 WARNING_SIZE = 1024 if IS_HF else 4096 
 MAX_SIZE = 2048 if IS_HF else None
 USE_DETECTOR = True if IS_HF else False
@@ -37,13 +40,17 @@ class App:
         self.running = True
 
     def upscale(self, image):
+
+        image_rgb = Image.new("RGB", image.size, (255, 255, 255))
+        image_rgb.paste(image)
+
         self.upscaling = True
         bar = st.progress(0)
         
         model = AstroSleuth(use_detector=USE_DETECTOR, use_onnxruntime=not USE_TORCH, device="cuda" if USE_GPU else "cpu")
 
         result = None
-        for i in model.enhance_with_progress(image):
+        for i in model.enhance_with_progress(image_rgb):
             if type(i) == float:
                 bar.progress(i)
             else:

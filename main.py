@@ -114,6 +114,7 @@ class AstroSleuth():
         yield None
 
     def enhance_with_progress(self, image:Image) -> Image:
+        print("Received:", np.array(image).shape)
         
         use_onnxruntime = self.use_onnxruntime
         model_src = self.model_pth
@@ -137,15 +138,8 @@ class AstroSleuth():
 
         original_width, original_height = image.size
         image = image.resize((max(original_width//self.tile_size * self.tile_size, self.tile_size), max(original_height//self.tile_size * self.tile_size, self.tile_size)), resample=Image.Resampling.BICUBIC)
-
+        
         image = np.array(image)
-
-        # Convert grayscale to RGB, or remove alpha channel        
-        if len(image.shape) == 2:
-            image = np.expand_dims(image, axis=2)
-            image = np.repeat(image, 3, axis=2)
-        else:
-            image = image[:,:,:3]
 
         result = Image.new("RGB", (image.shape[1]*self.scale, image.shape[0]*self.scale))
         for i, tile in enumerate(self.tile_generator(image, yield_extra_details=True, use_onnxruntime=use_onnxruntime)):
@@ -164,5 +158,8 @@ if __name__ == '__main__':
     src = sys.argv[1]
     dst = sys.argv[2]
     a = AstroSleuth()
-    r = a.enhance(Image.open(src))
+    img = Image.open(src)
+    print(np.array(img).shape)
+    quit()
+    r = a.enhance(img)
     r.save(dst)
