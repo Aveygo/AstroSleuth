@@ -31,45 +31,42 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 ## Running
 
 ### Hugging face - Good for testing/playing around
-1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus and you'll likely be sharing, so large images may take a very long time, even timing out.
+1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus and you'll likely be sharing so large images may take a while, even timing out.
 
 ### Colab - Best method if you don't have a GPU 
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
 2. Enjoy!
 
-### Locally (Binaries) - Recommended method
+### Locally ( Binaries ) - Recommended method
 1. Go to the [releases](https://github.com/Aveygo/AstroSleuth/releases) page 
 2. Download the latest zip for your platform, eg: astrosleuth-v0.1.0-windows.zip
 3. Unzip and enter the folder
-4. Right click -> open in terminal
-5. ```astrosleuth.exe  -n astrosleuth -i [input source] -o [output destination]```
+4. If windows, double click ```run.bat``` and follow from there
+
+### Locally ( Binaries, continued ) - Linux/Macos
+4. Set executable permissions with ```sudo chmod +x astrosleuth```
+5. Run with ```./astrosleuth -n astrosleuth -i [input image path] -o [output path]```
 
 ### Locally (Python) - Fairly complicated, is the "proper" way to self-host
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
-2. Download and unzip the latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
-3. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
-4. Run the streamlit interface with ```streamlit run app.py```
-
-### Local (Python - Pytorch) - GPU Acceleration
-1. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
-2. Follow the "Locally (Python)" instructions, but run with ```streamlit run app.py -- --gpu --torch``` for step 4
-
-### Local (Python - ONNX) - GPU Acceleration
-Please note, this method only works if you have cuda version 11, check your drivers first!
-
-1. Run ```pip3 uninstall onnxruntime```
-2. and then ```pip3 install onnxruntime-gpu```
+2. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
+3. Download and unzip the latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
+4. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
+5. Run the streamlit interface with ```streamlit run app.py```
 
 ## Extra information
 
 Please see [details](https://github.com/Aveygo/AstroSleuth/blob/master/results/details.md) for image samples and potential workflow improvements and [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md) for details on how the models are trained.
 
+## Recent changes
+
+ - Onnx support dropped in favor of ncnn, which also makes the code simpler
+ - AstroSleuthV2 is now out and comes with the binary files by default
+ - Minor changes to the streamlit interface
+
 ## Known issues
 
-Results are now more comparable with BlurXterminator after training improvements (see [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md)). AstroSleuthV2 weights will be on the hugging face repo, but not automatically downloaded for the time being.
-
-~~Currently investigating a "zero-knowledge" solution.~~
-No "real" zero-knowledge solution seems very practical. Still on the lookout for the time being.
+Results are now more comparable with BlurXterminator after training improvements (see [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md)).
 
 The biggest concern currently is the discriminator failing to detect real from fakes, regardless of it's weight on the generator. This results in AstroSleuthV2 adding a lot more stars than it should (supposably also due to the new feature model having some effect), and overall not performing to my standards. A fix is currently underway but will take a while to train/find best training parameters, and maybe needs a new discriminator altogether.
 
@@ -78,9 +75,13 @@ Another issue is star diffraction spikes being wavy or "spotty". A better disscr
 ## Concerns and Personal Notes
 
 Its not a understatement that this tool has changed my life. It was my first machine learning project. I even built full-stack applications searching for the perfect way to share my work.
-I will continue to do so. Ask for any improvements and I will likely impliment them. I am begging for an excuse to work on it so any feedback is appreciated. I am interested in creating a Photoshop/Pixinsight plugin if thats what even a single person wants, just open a git issue [here](https://github.com/Aveygo/AstroSleuth/issues) and I'll see to it.
+I will continue to do so. Ask for any improvements and I will likely implement them. Any feedback is appreciated, such as creating a Photoshop/Pixinsight plugin, just open a git issue [here](https://github.com/Aveygo/AstroSleuth/issues) and I'll see to it.
 
 For the redditors, this tool is presented as is, free as long as it stays free, I cannot convey though words how much I dont care that its not "scientifically accurate".
+
+## Support the project
+
+Make sure to give the repo a star so that it's easier for other people to discover it!
 
 <!---If it wasnt for https://www.rc-astro.com/ I wouldnt have built up the effort though spite to go though redeveloping this project. "Does BlurXTerminator fabricate detail? No" is full of s**t, when I got s**t for being honest and saying my model does-->
 <!--git push hf HEAD:main-->

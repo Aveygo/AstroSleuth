@@ -7,7 +7,6 @@ class AstroSleuth():
     def __init__(self, tile_size=256, tile_pad=16, wrk_dir="models/", model="astrosleuthv2", force_cpu=False, on_download=None, off_download=None):
         # Device selection
         self.device = "cpu" if force_cpu else ("cuda" if torch.cuda.is_available() else "cpu")
-        print(self.device)
         
         # Check if model name is known
         model_src:dict = json.load(open("models.json"))["data"]
