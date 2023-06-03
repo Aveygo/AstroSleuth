@@ -1,4 +1,4 @@
-from network import Network
+from modules.realesr import Network
 import torch
 
 src = "model.pth"

@@ -2,4 +2,4 @@
 numpy==1.23.4               # General data manipulation
 Pillow==9.5.0               # Reading images
 streamlit==1.20.0           # Web app framework
-onnxruntime==1.14.1         # ONNX runtime (use onnxruntime-gpu for GPU)
+torch==2.0.0                # pytorch runtime

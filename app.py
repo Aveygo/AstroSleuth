@@ -1,54 +1,60 @@
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.websocket_headers import _get_websocket_headers
+
 from PIL import Image
-import time, threading, io, os, sys
+import time, threading, io, warnings, argparse
+from os import listdir
 
 from file_queue import FileQueue
 from main import AstroSleuth
 
-from os import listdir
-
-try:
-    IS_HF = listdir('/home/')[0] == 'user'
-except:
-    IS_HF = False
-WARNING_SIZE = 1024 if IS_HF else 4096 
-MAX_SIZE = 2048 if IS_HF else None
-USE_DETECTOR = True if IS_HF else False
-
-if IS_HF:
-    print("Running in huggingface environment!")
-
-if USE_DETECTOR:
-    print("WARNING: Space detector is being used! It's possible for a space image to be upscaled with the incorrect model if it gets misclassified!")
-
-import argparse
-
 parser = argparse.ArgumentParser(description='AstroSleuth')
-parser.add_argument('--gpu', action='store_true', help='Use GPU')
-parser.add_argument('--torch', action='store_true', help='Use Torch')
+parser.add_argument('--cpu', action='store_true', help='Force CPU')
+parser.add_argument('--ignore_hf', action='store_true', help='Ignore hugging face enviornment')
 
 args = parser.parse_args()
-USE_GPU = args.gpu
-USE_TORCH = args.torch
+FORCE_CPU = args.cpu
+IGNORE_HF = args.ignore_hf
+
+# Check if we are running in huggingface environment
+try: IS_HF = listdir('/home/')[0] == 'user'
+except: IS_HF = False
+
+# Set image warning and max sizes
+IS_HF = IS_HF if not IGNORE_HF else False
+WARNING_SIZE = 1024 if IS_HF else 4096 
+MAX_SIZE = 2048 if IS_HF else None
+
+if IS_HF: warnings.warn(f"Running in huggingface environment! Images will be resized to cap of {MAX_SIZE}x{MAX_SIZE}")
 
 class App:
     def __init__(self):
-        self.upscaling = False
         self.queue = None
         self.running = True
+    
+    def on_download(self):
+        self.download_info = st.info(f"Downloading the model, this may take a minute...", icon ="☁️")
+    
+    def off_download(self):
+        self.download_info.empty()
 
     def upscale(self, image):
-
+        # Convert to RGB if not already
         image_rgb = Image.new("RGB", image.size, (255, 255, 255))
         image_rgb.paste(image)
+        del image
 
-        self.upscaling = True
+        # Start the model (downloading is done here)
+        model = AstroSleuth(force_cpu=FORCE_CPU, on_download=self.on_download, off_download=self.off_download)
+
+        # Show that upscale is starting
+        self.info = st.info("Upscaling image...", icon="🔥")
+
+        # Set the bar to 0
         bar = st.progress(0)
-        
-        model = AstroSleuth(use_detector=USE_DETECTOR, use_onnxruntime=not USE_TORCH, device="cuda" if USE_GPU else "cpu")
 
+        # Run the model, yield progress
         result = None
         for i in model.enhance_with_progress(image_rgb):
             if type(i) == float:
@@ -57,15 +63,19 @@ class App:
                 result = i
                 break
             
+            # Early exit if we are no longer running (user closed the page)
             if not self.running:
                 break
-
+        
+        # Clear the bar
         bar.empty()
-
-        self.upscaling = False
         return result
 
     def heart(self):
+        # Beacause multiple users may be using the app at once, we need to check if
+        # the websocket headers are still valid and to communicate with other threads
+        # that we are still "in line"
+        
         while self.running and self.queue.should_run():
             if _get_websocket_headers() is None:
                 self.close()
@@ -78,6 +88,7 @@ class App:
         st.title('AstroSleuth')
         st.subheader("Upscale deep space targets with AI")
 
+        # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):
             file = st.file_uploader("FILE UPLOADER", type=["png", "jpg", "jpeg"])
             submitted = st.form_submit_button("Upscale!")
@@ -85,6 +96,7 @@ class App:
         if submitted and file is not None:
             image = Image.open(file)
             
+            # Resize the image if it is too large
             if MAX_SIZE is not None and (image.width > MAX_SIZE or image.height > MAX_SIZE):
                 st.warning("Your image was resized to save on resources! To avoid this, run AstroSleuth with colab or locally: https://github.com/Aveygo/AstroSleuth#running", icon="⚠️")
                 if image.width > image.height:
@@ -95,46 +107,53 @@ class App:
             elif image.width > WARNING_SIZE or image.height > WARNING_SIZE:
                 st.info("Woah, that image is quite large! You may have to wait a while and/or get unexpected errors!", icon="🕒")
 
+            # Start the queue
             self.queue = FileQueue()
-            
             queue_box = None
+
+            # Wait for the queue to be empty
             while not self.queue.should_run():    
                 if queue_box is None:
                     queue_box = st.warning("Experincing high demand, you have been placed in a queue! Please wait...", icon ="🚦") 
                 time.sleep(1)
                 self.queue.heartbeat()
             
+            # Start the heart thread while we are upscaling
             t = threading.Thread(target=self.heart)
             add_script_run_ctx(t)
             t.start()
 
+            # Empty the queue box
             if queue_box is not None:
                 queue_box.empty()
 
-            info = st.info("Upscaling image...", icon="🔥")
-
+            # Start the upscale
             image = self.upscale(image)
+
+            # Check if the upscale failed for whatever reason
             if image is None:
                 st.error("Internal error: Upscaling failed, please try again later?", icon="❌")
                 self.close()
                 return     
-            
-            if queue_box is not None:
-                queue_box.empty()
-            info.empty()
 
-            st.success('Done! Loading result... (Please use download button to save result for the highest resolution)', icon="🎉")
+            # Empty the info box
+            self.info.empty()
+
+            st.success('Done! Receiving result... (Please use the download button for the highest resolution)', icon="🎉")
             
+            # Convert to bytes
             b = io.BytesIO()
             file_type = file.name.split(".")[-1].upper()
             file_type = "JPEG" if not file_type in ["JPEG", "PNG"] else file_type
             image.save(b, format=file_type)
-            st.download_button("Download", b.getvalue(), file.name, "image/" + file_type)
+            st.download_button("Download Full Resolution", b.getvalue(), file.name, "image/" + file_type)
 
+            # Show preview
             st.image(image, caption='Upscaled preview', use_column_width=True)
             self.close()
         
     def close(self):
+        # Exit from queue and stop running
         self.running = False
         if self.queue is not None:
             self.queue.quit()

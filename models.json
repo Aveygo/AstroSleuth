@@ -1,0 +1,35 @@
+{
+    "meta": "Urls for different models",
+    "data": {
+        "astrosleuthv1": {
+            "description": "The original model, trained for accuracy, with minor artifacts at times.",
+            "size": "20MB",
+            "parameters": "4500000",
+            "created": 1654229583,
+            "updated": 1654229583,
+            "scale": 4,
+            "tile_size": 256,
+            "tile_pad": 16,
+            "changelog": [],
+            "src": {
+                "url": "https://t.ly/_bgi",
+                "module": "modules.realesr/Network"
+            }
+        },
+        "astrosleuthv2": {
+            "description": "Finetuned with an improved perceptual loss, less artifacts, great for complex targets.",
+            "size": "20MB",
+            "parameters": "4500000",
+            "created": 1683087183,
+            "updated": 1683087183,
+            "scale": 4,
+            "tile_size": 256,
+            "tile_pad": 16,
+            "changelog": [],
+            "src": {
+                "url": "https://t.ly/9uQA",
+                "module": "modules.realesr/Network"
+            }
+        }
+    }
+}

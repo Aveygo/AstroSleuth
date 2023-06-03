@@ -1,68 +1,61 @@
-import math, numpy as np, requests, os, time
+import math, numpy as np, requests, os, time, warnings, json
 from PIL import Image
-import onnxruntime
-from astrodetect import AstroDetect
-
-try:
-    import torch
-    from network import Network
-    TORCH_INSTALLED = True
-except:
-    TORCH_INSTALLED = False
+from importlib import import_module
+import torch
 
 class AstroSleuth():
-    def __init__(self, tile_size=256, tile_pad=16, wrk_dir="models/", use_detector=False, use_onnxruntime=True, device="cpu"):
-        self.tile_size = tile_size
-        self.tile_pad = tile_pad
-        self.device = device
-        self.use_onnxruntime = use_onnxruntime
-
-        if not TORCH_INSTALLED and not self.use_onnxruntime:
-            print("pytorch not installed! using onnxruntime")
-            use_onnxruntime = True
+    def __init__(self, tile_size=256, tile_pad=16, wrk_dir="models/", model="astrosleuthv2", force_cpu=False, on_download=None, off_download=None):
+        # Device selection
+        self.device = "cpu" if force_cpu else "cuda" if torch.cuda.is_available() else "cpu"
         
+        # Check if model name is known
+        model_src:dict = json.load(open("models.json"))["data"]
+        assert model in model_src, f"Model {model} not found! Available models: {list(model_src.keys())}"
 
-        if self.use_onnxruntime:
-            self.model_pth = os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")
-            #self.download("https://t.ly/fJ3D", os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")) # AstroSleuthV1 (ONNX)
-            self.download("https://t.ly/2SAQ", os.path.join(wrk_dir, "astrosleuth_onnx/model.onnx")) # AstroSleuthV2 (ONNX)
-            
-        else:
-            self.model_pth = os.path.join(wrk_dir, "astrosleuth_torch/model.pth")
-            #self.download("https://t.ly/_bgi", os.path.join(wrk_dir, "astrosleuth_torch/model.pth")) # AstroSleuthV1 (Torch)
-            self.download("https://t.ly/9uQA", os.path.join(wrk_dir, "astrosleuth_torch/model.pth")) # AstroSleuthV2 (Torch)
+        # Load model module
+        module_path = model_src[model]["src"]["module"]
 
-        self.detector = None
-        if use_detector:
-            
-            self.realesr_pth = os.path.join(wrk_dir, "realesr/realesr.onnx")
+        self.model_module:torch.nn.Module = getattr(
+            import_module(module_path.split("/")[0]),
+            module_path.split("/")[1]
+        )
 
-            self.download("https://t.ly/NiNM", os.path.join(wrk_dir, "astrodetect/astrodetect.onnx"))
-            self.download("https://t.ly/RZ_Y", self.realesr_pth)
-            self.detector:AstroDetect = AstroDetect()            
+        # Download model if not available
+        self.model_pth = os.path.join(wrk_dir, f"{model}/model.pth")
+        self.download(model_src[model]["src"]["url"], self.model_pth, on_download, off_download)
             
         self.wrk_dir = wrk_dir
-        self.scale = 4
         self.progress = None
+
+        # Set tile processing parameters
+        self.scale = model_src[model]["scale"]
+        self.tile_size = tile_size
+        self.tile_pad = tile_pad
     
-    def download(self, src, dst):
+    def download(self, src, dst, on_download=None, off_download=None):
         if not os.path.exists(dst):
-            print("Downloading", src, "to", dst)
-            
-            # Create directory if it doesn't exist
             os.makedirs(os.path.dirname(dst), exist_ok=True)
+
+            if on_download is not None:
+                on_download()
 
             with open(dst, 'wb') as f:
                 f.write(requests.get(src, allow_redirects=True, headers={"User-Agent":""}).content)
 
-    def model_inference(self, x: np.ndarray, use_onnxruntime=True):
-        if use_onnxruntime:
-            return self.model.run([self.output_name], {self.input_name: x})[0]
-        else:
-            x = torch.from_numpy(x).to(self.device)
-            return self.model(x).cpu().detach().numpy()
+            if off_download is not None:
+                off_download()
 
-    def tile_generator(self, data: np.ndarray, yield_extra_details=False, use_onnxruntime=True):
+    def model_inference(self, x: np.ndarray):
+        x = torch.from_numpy(x).to(self.device)
+        return self.model(x).cpu().detach().numpy()
+
+    def tile_generator(self, data: np.ndarray, yield_extra_details=False):
+        """
+        Process data [height, width, channel] into tiles of size [tile_size, tile_size, channel],
+        feed them one by one into the model, then yield the resulting output tiles.
+        """
+
+        # [height, width, channel] -> [1, channel, height, width]
         data = np.rollaxis(data, 2, 0)
         data = np.expand_dims(data, axis=0)
         data = np.clip(data, 0, 255)
@@ -76,13 +69,11 @@ class AstroSleuth():
             x = i % tiles_y
             y = math.floor(i/tiles_y)
 
-            ofs_x = y * self.tile_size
-            ofs_y = x * self.tile_size
+            input_start_x = y * self.tile_size
+            input_start_y = x * self.tile_size
 
-            input_start_x = ofs_x
-            input_end_x = min(ofs_x + self.tile_size, width)
-            input_start_y = ofs_y
-            input_end_y = min(ofs_y + self.tile_size, height)
+            input_end_x = min(input_start_x + self.tile_size, width)
+            input_end_y = min(input_start_y + self.tile_size, height)
 
             input_start_x_pad = max(input_start_x - self.tile_pad, 0)
             input_end_x_pad = min(input_end_x + self.tile_pad, width)
@@ -94,7 +85,7 @@ class AstroSleuth():
 
             input_tile = data[:, :, input_start_y_pad:input_end_y_pad, input_start_x_pad:input_end_x_pad].astype(np.float32) / 255
 
-            output_tile = self.model_inference(input_tile, use_onnxruntime)
+            output_tile = self.model_inference(input_tile)
             self.progress = (i+1) / (tiles_y * tiles_x)
             
             output_start_x_tile = (input_start_x - input_start_x_pad) * self.scale
@@ -113,44 +104,43 @@ class AstroSleuth():
         
         yield None
 
-    def enhance_with_progress(self, image:Image) -> Image:
-        print("Received:", np.array(image).shape)
+    def enhance_with_progress(self, image:Image) -> Image:    
+        """
+        Take a PIL image and enhance it with the model, yielding stats about the
+        final image and then the final image itself.
+        """    
         
-        use_onnxruntime = self.use_onnxruntime
-        model_src = self.model_pth
-
-        if self.detector is not None:
-            a = time.time()
-            result = self.detector.is_space(image)
-            print(f"Detection took {time.time() - a:.2f} seconds, result: {result}")
-            if not result: # Not space, use realesr
-                model_src = self.realesr_pth
-                use_onnxruntime = True
-
-        if use_onnxruntime:
-            self.model = onnxruntime.InferenceSession(model_src, providers=['CUDAExecutionProvider'] if self.device == "cuda" else ['CPUExecutionProvider'])
-            self.input_name = self.model.get_inputs()[0].name
-            self.output_name = self.model.get_outputs()[0].name
-        else:
-            self.model = Network().to(self.device)
-            self.model.load_state_dict(torch.load(model_src))
-            self.model.eval()
+        # Load model only now because when using streamlit, multiple users spawn multiple instances of this class, so 
+        # we only load the model when needed. The App() class is responsible for queuing requests to this class
+        self.model = self.model_module().to(self.device)
+        self.model.load_state_dict(torch.load(self.model_pth))
+        self.model.eval()
 
         original_width, original_height = image.size
+
+        # Because tiles may not fit perfectly, we resize to the closest multiple of tile_size
         image = image.resize((max(original_width//self.tile_size * self.tile_size, self.tile_size), max(original_height//self.tile_size * self.tile_size, self.tile_size)), resample=Image.Resampling.BICUBIC)
-        
         image = np.array(image)
 
+        # Initiate a pillow image to save the tiles
         result = Image.new("RGB", (image.shape[1]*self.scale, image.shape[0]*self.scale))
-        for i, tile in enumerate(self.tile_generator(image, yield_extra_details=True, use_onnxruntime=use_onnxruntime)):
-            if tile is None: break
+        
+        for i, tile in enumerate(self.tile_generator(image, yield_extra_details=True)):
+            
+            if tile is None:
+                break
+            
             tile_data, x, y, w, h, p = tile
             result.paste(Image.fromarray(tile_data), (x*self.scale, y*self.scale))
             yield p
-        result = result.resize((original_width * self.scale, original_height * self.scale), resample=Image.Resampling.BICUBIC)
-        yield result
+        
+        # Resize back to the expected size
+        yield result.resize((original_width * self.scale, original_height * self.scale), resample=Image.Resampling.BICUBIC)
         
     def enhance(self, image:Image) -> Image:
+        """
+        Skips the progress reporting and just returns the final image.
+        """
         return list(self.enhance_with_progress(image))[-1]
     
 if __name__ == '__main__':
@@ -159,7 +149,5 @@ if __name__ == '__main__':
     dst = sys.argv[2]
     a = AstroSleuth()
     img = Image.open(src)
-    print(np.array(img).shape)
-    quit()
     r = a.enhance(img)
     r.save(dst)
