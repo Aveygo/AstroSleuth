@@ -114,7 +114,7 @@ class AstroSleuth():
         # Load model only now because when using streamlit, multiple users spawn multiple instances of this class, so 
         # we only load the model when needed. The App() class is responsible for queuing requests to this class
         self.model = self.model_module().to(self.device)
-        self.model.load_state_dict(torch.load(self.model_pth), map_location=torch.device(self.device))
+        self.model.load_state_dict(torch.load(self.model_pth, map_location=torch.device(self.device)))
         self.model.eval()
 
         original_width, original_height = image.size
