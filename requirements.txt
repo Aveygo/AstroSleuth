@@ -1,5 +1,5 @@
 # python3 -m  pipreqs.pipreqs . --force
-numpy==1.23.4               # General data manipulation
-Pillow==9.5.0               # Reading images
-streamlit==1.20.0           # Web app framework
-torch==2.0.0                # pytorch runtime
+numpy               # General data manipulation
+Pillow              # Reading images
+streamlit           # Web app framework
+torch               # pytorch runtime
