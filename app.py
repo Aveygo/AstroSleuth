@@ -3,19 +3,25 @@ from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.websocket_headers import _get_websocket_headers
 
 from PIL import Image
-import time, threading, io, warnings, argparse
+import time, threading, io, warnings, argparse, json
 from os import listdir
 
 from file_queue import FileQueue
 from main import AstroSleuth
 
+known_models = list(json.load(open("models.json"))["data"].keys())
+known_models = ' '.join(known_models)
+
 parser = argparse.ArgumentParser(description='AstroSleuth')
+
 parser.add_argument('--cpu', action='store_true', help='Force CPU')
 parser.add_argument('--ignore_hf', action='store_true', help='Ignore hugging face enviornment')
+parser.add_argument('--modelname', default='astrosleuthv2', help=f'Select a model, available: {known_models}')
 
 args = parser.parse_args()
 FORCE_CPU = args.cpu
 IGNORE_HF = args.ignore_hf
+MODEL_NAME = args.modelname
 
 # Check if we are running in huggingface environment
 try: IS_HF = listdir('/home/')[0] == 'user'
@@ -32,9 +38,10 @@ class App:
     def __init__(self):
         self.queue = None
         self.running = True
+        self.model_name = MODEL_NAME
     
     def on_download(self):
-        self.download_info = st.info(f"Downloading the model, this may take a minute...", icon ="☁️")
+        self.download_info = st.info(f"Downloading the model: {self.model_name} (this may take a minute...)", icon ="☁️")
     
     def off_download(self):
         self.download_info.empty()
@@ -46,7 +53,7 @@ class App:
         del image
 
         # Start the model (downloading is done here)
-        model = AstroSleuth(force_cpu=FORCE_CPU, on_download=self.on_download, off_download=self.off_download)
+        model = AstroSleuth(force_cpu=FORCE_CPU, model_name=self.model_name, on_download=self.on_download, off_download=self.off_download)
 
         # Show that upscale is starting
         self.info = st.info("Upscaling image...", icon="🔥")
@@ -87,6 +94,7 @@ class App:
     def render(self):
         st.title('AstroSleuth')
         st.subheader("Upscale deep space targets with AI")
+        st.text(f"Using {self.model_name} for processing!")
 
         # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):

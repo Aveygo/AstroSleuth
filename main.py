@@ -4,16 +4,16 @@ from importlib import import_module
 import torch
 
 class AstroSleuth():
-    def __init__(self, tile_size=256, tile_pad=16, wrk_dir="models/", model="astrosleuthv2", force_cpu=False, on_download=None, off_download=None):
+    def __init__(self, tile_size=256, tile_pad=16, wrk_dir="models/", model_name="astrosleuthv2", force_cpu=False, on_download=None, off_download=None):
         # Device selection
         self.device = "cpu" if force_cpu else ("cuda" if torch.cuda.is_available() else "cpu")
         
         # Check if model name is known
         model_src:dict = json.load(open("models.json"))["data"]
-        assert model in model_src, f"Model {model} not found! Available models: {list(model_src.keys())}"
+        assert model_name in model_src, f"Model {model_name} not found! Available models: {list(model_src.keys())}"
 
         # Load model module
-        module_path = model_src[model]["src"]["module"]
+        module_path = model_src[model_name]["src"]["module"]
 
         self.model_module:torch.nn.Module = getattr(
             import_module(module_path.split("/")[0]),
@@ -21,17 +21,17 @@ class AstroSleuth():
         )
 
         # Download model if not available
-        self.model_pth = os.path.join(wrk_dir, f"{model}/model.pth")
-        self.download(model_src[model]["src"]["url"], self.model_pth, on_download, off_download)
+        self.model_pth = os.path.join(wrk_dir, f"{model_name}/model.pth")
+        self.download(model_src[model_name]["src"]["url"], self.model_pth, on_download, off_download)
             
         self.wrk_dir = wrk_dir
         self.progress = None
 
         # Set tile processing parameters
-        self.scale = model_src[model]["scale"]
+        self.scale = model_src[model_name]["scale"]
         self.tile_size = tile_size
         self.tile_pad = tile_pad
-    
+        
     def download(self, src, dst, on_download=None, off_download=None):
         if not os.path.exists(dst):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
