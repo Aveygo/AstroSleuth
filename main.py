@@ -145,6 +145,13 @@ class AstroSleuth():
     
 if __name__ == '__main__':
     import sys
+
+    # User ran with only "main.py"
+    if not len(sys.argv) == 3: 
+        print("Use main.py with a source and destination file, eg: 'python3 main.py img.png upscaled.png'")
+        print("You might also be interested in using the streamlit interface with: 'streamlit run app.py'")
+        quit()
+
     src = sys.argv[1]
     dst = sys.argv[2]
     a = AstroSleuth()
