@@ -31,6 +31,7 @@ except: IS_HF = False
 IS_HF = IS_HF if not IGNORE_HF else False
 WARNING_SIZE = 1024 if IS_HF else 4096 
 MAX_SIZE = 2048 if IS_HF else None
+Image.MAX_IMAGE_PIXELS = None if IS_HF else Image.MAX_IMAGE_PIXELS
 
 if IS_HF: warnings.warn(f"Running in huggingface environment! Images will be resized to cap of {MAX_SIZE}x{MAX_SIZE}")
 
@@ -40,20 +41,20 @@ class App:
         self.running = True
         self.model_name = MODEL_NAME
     
-    def on_download(self):
-        self.download_info = st.info(f"Downloading the model: {self.model_name} (this may take a minute...)", icon ="☁️")
+    def on_download(self, model_name):
+        self.download_info = st.info(f"Downloading the model: {model_name} (this may take a minute...)", icon ="☁️")
     
     def off_download(self):
         self.download_info.empty()
 
-    def upscale(self, image):
+    def upscale(self, image:Image, model_name:str)->Image.Image:
         # Convert to RGB if not already
         image_rgb = Image.new("RGB", image.size, (255, 255, 255))
         image_rgb.paste(image)
         del image
 
         # Start the model (downloading is done here)
-        model = AstroSleuth(force_cpu=FORCE_CPU, model_name=self.model_name, on_download=self.on_download, off_download=self.off_download)
+        model = AstroSleuth(force_cpu=FORCE_CPU, model_name=model_name, on_download=self.on_download, off_download=self.off_download)
 
         # Show that upscale is starting
         self.info = st.info("Upscaling image...", icon="🔥")
@@ -94,7 +95,17 @@ class App:
     def render(self):
         st.title('AstroSleuth')
         st.subheader("Upscale deep space targets with AI")
-        st.text(f"Using {self.model_name} for processing!")
+
+        #st.text(f"Using {self.model_name} for processing!")
+
+        # Selecting the model
+        model_src:dict = json.load(open("models.json"))["data"]
+        model_name = st.radio(
+            "Select a model use use for upscaling",
+            list(model_src.keys()),
+        )
+
+        st.write(f"{model_name}: {model_src[model_name]['description']}")
 
         # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):
@@ -136,7 +147,7 @@ class App:
                 queue_box.empty()
 
             # Start the upscale
-            image = self.upscale(image)
+            image = self.upscale(image, model_name)
 
             # Check if the upscale failed for whatever reason
             if image is None:
@@ -147,7 +158,7 @@ class App:
             # Empty the info box
             self.info.empty()
 
-            st.success('Done! Receiving result... (Please use the download button for the highest resolution)', icon="🎉")
+            st.success('Done! Please use the download button to get the highest resolution', icon="🎉")
             
             # Convert to bytes
             b = io.BytesIO()
@@ -157,7 +168,9 @@ class App:
             st.download_button("Download Full Resolution", b.getvalue(), file.name, "image/" + file_type)
 
             # Show preview
-            st.image(image, caption='Upscaled preview', use_column_width=True)
+            if (image.width*image.height) < (4096*4096):
+                st.image(image, caption='Upscaled preview', use_column_width=True)
+            
             self.close()
         
     def close(self):

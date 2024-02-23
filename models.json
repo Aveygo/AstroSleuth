@@ -2,7 +2,7 @@
     "meta": "Urls for different models",
     "data": {
         "astrosleuthv1": {
-            "description": "The original model, trained for accuracy, with minor artifacts at times.",
+            "description": "The 'original' model. Trained for accuracy.",
             "size": "20MB",
             "parameters": "4500000",
             "created": 1654229583,
@@ -17,7 +17,7 @@
             }
         },
         "astrosleuthv2": {
-            "description": "Finetuned with an improved perceptual loss, less artifacts, great for complex targets.",
+            "description": "Great for complex targets, but may make up more details.",
             "size": "20MB",
             "parameters": "4500000",
             "created": 1683087183,

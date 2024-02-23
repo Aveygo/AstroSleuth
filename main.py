@@ -22,7 +22,7 @@ class AstroSleuth():
 
         # Download model if not available
         self.model_pth = os.path.join(wrk_dir, f"{model_name}/model.pth")
-        self.download(model_src[model_name]["src"]["url"], self.model_pth, on_download, off_download)
+        self.download(model_src[model_name]["src"]["url"], self.model_pth, model_name, on_download, off_download)
             
         self.wrk_dir = wrk_dir
         self.progress = None
@@ -32,12 +32,12 @@ class AstroSleuth():
         self.tile_size = tile_size
         self.tile_pad = tile_pad
         
-    def download(self, src, dst, on_download=None, off_download=None):
+    def download(self, src, dst, model_name, on_download=None, off_download=None):
         if not os.path.exists(dst):
             os.makedirs(os.path.dirname(dst), exist_ok=True)
 
             if on_download is not None:
-                on_download()
+                on_download(model_name)
 
             with open(dst, 'wb') as f:
                 f.write(requests.get(src, allow_redirects=True, headers={"User-Agent":""}).content)
@@ -104,7 +104,7 @@ class AstroSleuth():
         
         yield None
 
-    def enhance_with_progress(self, image:Image) -> Image:    
+    def enhance_with_progress(self, image:Image):    
         """
         Take a PIL image and enhance it with the model, yielding stats about the
         final image and then the final image itself.
