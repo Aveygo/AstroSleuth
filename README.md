@@ -31,13 +31,20 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 ## Running
 
 ### Hugging face - Good for testing/playing around
-1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus and you'll likely be sharing so large images may take a while, even timing out.
+1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus (and you'll likely be sharing) so large images may take a while, even timing out.
 
 ### Colab - Best method if you don't have a GPU 
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
 2. Enjoy!
 
-### Locally ( Binaries ) - Recommended method
+### Locally (Python) - Recommended, contains latest features
+1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
+2. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
+3. Download and unzip the latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
+4. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
+5. Run the streamlit interface with ```streamlit run app.py```
+
+### Locally ( Binaries )
 1. Go to the [releases](https://github.com/Aveygo/AstroSleuth/releases) page 
 2. Download the latest zip for your platform, eg: astrosleuth-v0.1.0-windows.zip
 3. Unzip and enter the folder
@@ -46,13 +53,6 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 ### Locally ( Binaries, continued ) - Linux/Macos
 4. Set executable permissions with ```sudo chmod +x astrosleuth```
 5. Run with ```./astrosleuth -n astrosleuth -i [input image path] -o [output path]```
-
-### Locally (Python) - Fairly complicated, is the "proper" way to self-host
-1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
-2. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
-3. Download and unzip the latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
-4. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
-5. Run the streamlit interface with ```streamlit run app.py```
 
 ## Extra information
 
