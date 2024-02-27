@@ -83,5 +83,7 @@ For the redditors, this tool is presented as is, free as long as it stays free, 
 
 Make sure to give the repo a star so that it's easier for other people to discover it!
 
-<!---If it wasnt for https://www.rc-astro.com/ I wouldnt have built up the effort though spite to go though redeveloping this project. "Does BlurXTerminator fabricate detail? No" is full of s**t, when I got s**t for being honest and saying my model does-->
+<!--Analytics-->
+![Alt](https://repobeats.axiom.co/api/embed/dbcc73880aef11e4e7f6f0ae8c8f22557ea67e21.svg "Repobeats analytics image")
+
 <!--git push hf HEAD:main-->
