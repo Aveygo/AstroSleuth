@@ -45,7 +45,7 @@
             "tile_pad": 16,
             "changelog": [],
             "src": {
-                "url": null,
+                "url": "https://github.com/Aveygo/AstroSleuth/releases/download/NEXT/AstroSleuthNEXT.pth",
                 "module": "modules.next/Network"
             }
         },
@@ -61,7 +61,7 @@
             "tile_pad": 16,
             "changelog": [],
             "src": {
-                "url": null,
+                "url": "https://github.com/Aveygo/AstroSleuth/releases/download/FAST/AstroSleuthFAST.pth",
                 "module": "modules.fast/SRVGGModified"
             }
         }
