@@ -3,25 +3,20 @@ from streamlit.runtime.scriptrunner import add_script_run_ctx
 from streamlit.web.server.websocket_headers import _get_websocket_headers
 
 from PIL import Image
-import time, threading, io, warnings, argparse, json
+import time, threading, io, warnings, argparse, json, os
 from os import listdir
 
 from file_queue import FileQueue
 from main import AstroSleuth
 
-known_models = list(json.load(open("models.json"))["data"].keys())
-known_models = ' '.join(known_models)
-
 parser = argparse.ArgumentParser(description='AstroSleuth')
 
 parser.add_argument('--cpu', action='store_true', help='Force CPU')
 parser.add_argument('--ignore_hf', action='store_true', help='Ignore hugging face enviornment')
-parser.add_argument('--modelname', default='astrosleuthv2', help=f'Select a model, available: {known_models}')
 
 args = parser.parse_args()
 FORCE_CPU = args.cpu
 IGNORE_HF = args.ignore_hf
-MODEL_NAME = args.modelname
 
 # Check if we are running in huggingface environment
 try: IS_HF = listdir('/home/')[0] == 'user'
@@ -39,7 +34,6 @@ class App:
     def __init__(self):
         self.queue = None
         self.running = True
-        self.model_name = MODEL_NAME
     
     def on_download(self, model_name):
         self.download_info = st.info(f"Downloading the model: {model_name} (this may take a minute...)", icon ="☁️")
@@ -96,16 +90,20 @@ class App:
         st.title('AstroSleuth')
         st.subheader("Upscale deep space targets with AI")
 
-        #st.text(f"Using {self.model_name} for processing!")
+        # Load possible models to use for upscaling (manually edited for each release)
+        models:dict = json.load(open("models.json"))["data"]
 
-        # Selecting the model
-        model_src:dict = json.load(open("models.json"))["data"]
-        model_name = st.radio(
-            "Select a model use use for upscaling",
-            list(model_src.keys()),
+        # Show 'sunset' models if the user 
+        options = [i for i in models if not models[i]["sunset"]]
+        if st.toggle('View sunset models'):
+            options = [i for i in models]
+            
+        model_name = st.selectbox(
+            'Which model would you like to use?',
+            options
         )
 
-        st.write(f"{model_name}: {model_src[model_name]['description']}")
+        st.write(f"{model_name}: {models[model_name]['description']}")
 
         # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):
@@ -158,19 +156,25 @@ class App:
             # Empty the info box
             self.info.empty()
 
-            st.success('Done! Please use the download button to get the highest resolution', icon="🎉")
+            # Large images may take a while to encode
+            encoding_prompt = st.info("Upscale complete, encoding...")
             
             # Convert to bytes
             b = io.BytesIO()
             file_type = file.name.split(".")[-1].upper()
             file_type = "JPEG" if not file_type in ["JPEG", "PNG"] else file_type
             image.save(b, format=file_type)
+            
+            # Show success / Download button
+            encoding_prompt.empty()
+            st.success('Done! Please use the download button to get the highest resolution', icon="🎉")
             st.download_button("Download Full Resolution", b.getvalue(), file.name, "image/" + file_type)
 
             # Show preview
-            if (image.width*image.height) < (4096*4096):
-                st.image(image, caption='Upscaled preview', use_column_width=True)
+            image.thumbnail([1024, 1024])
+            st.image(image, caption='Image preview', use_column_width=True)
             
+            # Leave the queue for other clients to start upscaling
             self.close()
         
     def close(self):

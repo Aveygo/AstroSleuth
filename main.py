@@ -34,6 +34,7 @@ class AstroSleuth():
         
     def download(self, src, dst, model_name, on_download=None, off_download=None):
         if not os.path.exists(dst):
+            assert not src is None, "That model is not available for downloading - Are you on experimental?"
             os.makedirs(os.path.dirname(dst), exist_ok=True)
 
             if on_download is not None:
@@ -103,19 +104,22 @@ class AstroSleuth():
                 yield output_tile
         
         yield None
+    
+    def load_model(self):
+        # Load model only now because when using streamlit, multiple users spawn multiple instances of this class, so 
+        # we only load the model when needed. The App() class is responsible for queuing requests to this class
+        model:torch.nn.Module = self.model_module().to(self.device)
+        model.load_state_dict(torch.load(self.model_pth, map_location=torch.device(self.device)), strict=False)
+        model.eval()
+        return model
 
     def enhance_with_progress(self, image:Image):    
         """
         Take a PIL image and enhance it with the model, yielding stats about the
         final image and then the final image itself.
         """    
-        
-        # Load model only now because when using streamlit, multiple users spawn multiple instances of this class, so 
-        # we only load the model when needed. The App() class is responsible for queuing requests to this class
-        self.model = self.model_module().to(self.device)
-        self.model.load_state_dict(torch.load(self.model_pth, map_location=torch.device(self.device)))
-        self.model.eval()
 
+        self.model = self.load_model()
         original_width, original_height = image.size
 
         # Because tiles may not fit perfectly, we resize to the closest multiple of tile_size
@@ -147,14 +151,16 @@ if __name__ == '__main__':
     import sys
 
     # User ran with only "main.py"
-    if not len(sys.argv) == 3: 
-        print("Use main.py with a source and destination file, eg: 'python3 main.py img.png upscaled.png'")
+    if not len(sys.argv) == 4: 
+        print("Use main.py with a source, destination file, and model, eg: 'python3 main.py img.png upscaled.png astrosleuthv2'")
         print("You might also be interested in using the streamlit interface with: 'streamlit run app.py'")
         quit()
 
     src = sys.argv[1]
     dst = sys.argv[2]
-    a = AstroSleuth()
+    model_name = sys.argv[3]
+
+    a = AstroSleuth(model_name=model_name)
     img = Image.open(src)
     r = a.enhance(img)
     r.save(dst)

@@ -13,42 +13,42 @@ license: gpl-2.0
 # AstroSleuth
 
 <p align="center">
-  <img src="https://media.githubusercontent.com/media/Aveygo/AstroSleuth/master/sample.png">
+  <img src="results/gui.png">
 </p>
 
 [![Aveygo - AstroSleuth](https://img.shields.io/static/v1?label=Aveygo&message=AstroSleuth&color=black&logo=github)](https://github.com/Aveygo/AstroSleuth "Go to GitHub repo")
 [![stars - AstroSleuth](https://img.shields.io/github/stars/Aveygo/AstroSleuth?style=social)](https://github.com/Aveygo/AstroSleuth)[![Python 3.9.9](https://img.shields.io/badge/python-3.9.9-black.svg)](https://www.python.org/downloads/release/python-399/)
 
-The (only?) free, zero bulls**t, 200 line, open source astrophotgraphy upscaler.
+The (only?) free, no-strings-attached, open source astrophotgraphy upscaler toolset. I wanted a solution that can run on almost any hardware with epic results, and I hope this repo serves you well.
 
-Sick of the commercialisation of deep space tools, I wanted a solution that can run on almost any hardware with epic results.
+If you ever want to support the project, please give the repo a star so that it's easier for others to discover it.
 
-I started this project a regrettably long time ago. A lot has changed since then. I tried to share my work, got burned, removed it, perfected it, and fell into a well of "is it good enough".
-
-I present my original idea, a finetuned realesr-gan model trained on 15k images of astrophotography. It is behind my works on [reddit](https://www.reddit.com/user/CodingCoda), my [youtube](https://www.youtube.com/channel/UCHode4WV0hteze-ZDEG5atQ) attempt
-and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleuth-image-denoiser-upscaler/), and I hope it will suit you well.
-
-## Running
-
-### Hugging face - Good for testing/playing around
-1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus (and you'll likely be sharing) so large images may take a while, even timing out.
+## Running AstroSleuth
 
 ### Colab - Best method if you don't have a GPU 
 1. Visit [colab](https://colab.research.google.com/drive/1LxiNsnokF-6OmICSxWNvTeFEEZvRM2Lp?usp=sharing)
 2. Enjoy!
 
-### Locally (Python) - Recommended, contains latest features
+### Locally (Docker) - Somewhat recommended, not very "efficent"
+1. Download [docker](https://www.docker.com/products/docker-desktop/)
+2. In a terminal, run ```docker run -p 7860:7860 --gpus all --rm -ti --ipc=host astrosleuth```
+4. Go to [127.0.0.1:7860](http://127.0.0.1:7860)
+
+### Locally (Python) - Highly recommended for experienced users
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
 2. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
 3. Download and unzip the latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
 4. Open the terminal (right-click -> terminal) and run ```pip install -r requirements.txt```
 5. Run the streamlit interface with ```streamlit run app.py```
 
-### Locally ( Binaries )
+### Hugging face - Good for testing/playing around
+1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus and that you'll likely be sharing so large images may take a while.
+
+### Locally ( Binaries ) - Good for fast inference and 'bare minimum' needs
 1. Go to the [releases](https://github.com/Aveygo/AstroSleuth/releases) page 
 2. Download the latest zip for your platform, eg: astrosleuth-v0.1.0-windows.zip
 3. Unzip and enter the folder
-4. If windows, double click ```run.bat``` and follow from there
+4. If on windows, double click ```run.bat``` and follow from there
 
 ### Locally ( Binaries, continued ) - Linux/Macos
 4. Set executable permissions with ```sudo chmod +x astrosleuth```
@@ -56,32 +56,42 @@ and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleut
 
 ## Extra information
 
-Please see [details](https://github.com/Aveygo/AstroSleuth/blob/master/results/details.md) for image samples and potential workflow improvements and [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md) for details on how the models are trained.
+Please see [details](results/details.md) for image samples and potential workflow improvements, as well as [training](results/training.md) for details on how the models are trained.
 
 ## Recent changes
 
- - Onnx support dropped in favor of ncnn, which also makes the code simpler
- - AstroSleuthV2 is now out and comes with the binary files by default
- - Minor changes to the streamlit interface
+ - AstroNEXT and AstroFAST models to replace V2 and V1 respectively. Read model.json for more details.
+ - Minor UI changes for reading model descriptions.
+ - Scaled the preview image for faster loading.
+
+## Why
+
+I started this project a regrettably long time ago. I tried different ways to share my work, got some hate, some love, and setted for what you see now.
+
+I present an acculmination of multiple ideas, improvements, and lessons; trained on 15 thousand images of various astrophotography targets. 
+
+It is behind my works on [reddit](https://www.reddit.com/user/CodingCoda), my [youtube](https://www.youtube.com/channel/UCHode4WV0hteze-ZDEG5atQ) attempt and my [cloudy nights post](https://www.cloudynights.com/topic/816869-astrosleuth-image-denoiser-upscaler/), and I hope it leads the way for any other future attempts; for anyone.
 
 ## Known issues
 
-Results are now more comparable with BlurXterminator after training improvements (see [training](https://github.com/Aveygo/AstroSleuth/blob/master/training.md)).
 
-The biggest concern currently is the discriminator failing to detect real from fakes, regardless of it's weight on the generator. This results in AstroSleuthV2 adding a lot more stars than it should (supposably also due to the new feature model having some effect), and overall not performing to my standards. A fix is currently underway but will take a while to train/find best training parameters, and maybe needs a new discriminator altogether.
+AstroSleuthNEXT likes to really invent lots of small stars in the background and struggles with large stars by turning them into star clusters as well as turning diffraction spikes into waves or smaller stars. Like with most ml problems, this looks like a garbage in - garbage out kind of situation. 
 
-Another issue is star diffraction spikes being wavy or "spotty". A better disscriminator will help, but a dataset more focused on diffraction spikes is much more optimal. Possible synthetic dataset in the works currently.
+No known solutions other than to increase pixel loss weight during training. Currently waiting for any better ideas to pop up. Best way to get around this is by using AstroSleuthFAST.
 
 ## Concerns and Personal Notes
 
-Its not a understatement that this tool has changed my life. It was my first machine learning project. I even built full-stack applications searching for the perfect way to share my work.
-I will continue to do so. Ask for any improvements and I will likely implement them. Any feedback is appreciated, such as creating a Photoshop/Pixinsight plugin, just open a git issue [here](https://github.com/Aveygo/AstroSleuth/issues) and I'll see to it.
+A lot has happend throughout this project. I guess cause it was my first machine learning application and it's been a nice distraction every now and again.
 
-For the redditors, this tool is presented as is, free as long as it stays free, I cannot convey though words how much I dont care that its not "scientifically accurate".
+Ask for any improvements and I will likely implement them. Any feedback is appreciated, such as creating a Photoshop/Pixinsight plugin? Just open a git issue [here](https://github.com/Aveygo/AstroSleuth/issues) and I'll see to it.
 
-## Support the project
+This tool is presented as is, free as long as it stays free. "Scientific accuracy" was never the goal of this project - it was made to help others, and to make astronomy a little easier. 
 
-Make sure to give the repo a star so that it's easier for other people to discover it!
+<!--
+Hi there, if you are reading this, then maybe you are interested in helping out. Make your changes, create a pull request, and I'll see to it.
+-->
 
-<!---If it wasnt for https://www.rc-astro.com/ I wouldnt have built up the effort though spite to go though redeveloping this project. "Does BlurXTerminator fabricate detail? No" is full of s**t, when I got s**t for being honest and saying my model does-->
+<!--Analytics-->
+![Alt](https://repobeats.axiom.co/api/embed/dbcc73880aef11e4e7f6f0ae8c8f22557ea67e21.svg "Repobeats analytics image")
+
 <!--git push hf HEAD:main-->
