@@ -31,7 +31,7 @@ If you ever want to support the project, please give the repo a star so that it'
 
 ### Locally (Docker) - Somewhat recommended, not very "efficent"
 1. Download [docker](https://www.docker.com/products/docker-desktop/)
-2. In a terminal, run ```docker run -p 7860:7860 --gpus all --rm -ti --ipc=host astrosleuth```
+2. In a terminal, run ```docker run -p 7860:7860 --gpus all --rm -ti --ipc=host aveygo/astrosleuth:experimental```
 4. Go to [127.0.0.1:7860](http://127.0.0.1:7860)
 
 ### Locally (Python) - Highly recommended for experienced users
