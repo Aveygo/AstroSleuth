@@ -22,7 +22,7 @@ Identifying that V1 could see some improvements on the discriminator front, I wr
 
 This model was founded on a completely different basis from the first two. Rather than trying to fight against 3 (or more) different loss functions, the discriminator was set with this responsibility. 
 
-This does result in some undesired effects, notably some color or structural artifacts, which is why I also added conditioning to the model to try and mitigate this. 
+This does result in some undesired effects, notably some color or structural artifacts, which is why I also added conditioning to the model to try and mitigate this. You can see some results in [against blurx](against_blurx.md) and [conditioning](conditioning.md).
 
 An important note is that conditioning does not work with ncnn (the binary release), as layer normalization is not yet supported.  
 

@@ -107,6 +107,7 @@ class App:
         st.write(f"{model_name}: {models[model_name]['description']}")
 
         # Load extra model inputs
+        extra_inputs=None
         if "extra_streamlit" in models[model_name]:
             module = getattr(
                 import_module(models[model_name]["extra_streamlit"].split("/")[0]),

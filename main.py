@@ -48,7 +48,10 @@ class AstroSleuth():
 
     def model_inference(self, x: np.ndarray, args:dict={}):
         x = torch.from_numpy(x).to(self.device)
-        return self.model(x=x, **args).cpu().detach().numpy()
+        if not args is None:
+            return self.model(x=x, **args).cpu().detach().numpy()
+        else:
+            return self.model(x=x).cpu().detach().numpy()
 
     def tile_generator(self, data: np.ndarray, yield_extra_details=False, args={}):
         """

@@ -131,6 +131,7 @@ def streamlit():
     star_strength = 0.0
     hubble_strength = 0.0
     cond_strength = 1.0
+    color_matching = st.toggle("Use color matching")
     use_cond = st.toggle("Use conditioning")
     if use_cond:
         cond_strength = st.slider("Strength", 0.0, 5.0, 1.0, 0.1)
@@ -143,7 +144,8 @@ def streamlit():
         "star_strength": star_strength, 
         "hubble_strength": hubble_strength,
         "cond_strength": cond_strength,
-        "use_cond":use_cond
+        "use_cond":use_cond,
+        "color_matching": color_matching
     }
 
 class Network(nn.Module):
@@ -179,18 +181,52 @@ class Network(nn.Module):
         x = np.frombuffer(base64.decodebytes(x), dtype=np.float32).copy()
         return torch.from_numpy(x)
 
-    def forward(self, x, star_strength=0, detail_strength=0, hubble_strength=0, use_cond=False, cond_strength=1):
-        #c = self.average + self.stars * star_strength + self.detail * detail_strength
+    def rgb_to_ycbcr(self, image: torch.Tensor) -> torch.Tensor:
+        r: torch.Tensor = image[..., 0, :, :]
+        g: torch.Tensor = image[..., 1, :, :]
+        b: torch.Tensor = image[..., 2, :, :]
+        y: torch.Tensor = .299 * r + .587 * g + .114 * b
+        cb: torch.Tensor = (b - y) * .564 + .5
+        cr: torch.Tensor = (r - y) * .713 + .5
+        return y, cb, cr
+    
+    def ycbcr_to_rgb(self, y: torch.Tensor, cb: torch.Tensor, cr: torch.Tensor) -> torch.Tensor:
+        r: torch.Tensor = y + 1.403 * (cr - 0.5)
+        g: torch.Tensor = y - 0.714 * (cr - 0.5) - 0.344 * (cb - 0.5)
+        b: torch.Tensor = y + 1.773 * (cb - 0.5)
+        rgb_image: torch.Tensor = torch.stack([r, g, b], dim=-3)
+        return torch.clamp(rgb_image, 0, 1)
+
+    def color_matching(self, src, trg, match_strength=1):
+        """
+        Match the colors of src onto trg
+        We assume that the luminance of trg provides enough detail.
+        However, if the src was noisy or already low quality (eg, jpeg), then it may be
+        better to decrease the match_strength
+        """
+        src_y, src_cb, src_cr = self.rgb_to_ycbcr(src)
+        trg_y, trg_cb, trg_cr = self.rgb_to_ycbcr(trg)
+        src_cb = F.interpolate(src_cb.view(1, 1, src.shape[2], src.shape[3]), scale_factor=4, mode='bilinear').view(1, src.shape[2]*4, src.shape[3]*4)
+        src_cr = F.interpolate(src_cr.view(1, 1, src.shape[2], src.shape[3]), scale_factor=4, mode='bilinear').view(1, src.shape[2]*4, src.shape[3]*4)
+        trg_cb = trg_cb * (1-match_strength) + src_cb * match_strength
+        trg_cr = trg_cr * (1-match_strength) + src_cr * match_strength
+        trg = self.ycbcr_to_rgb(trg_y, trg_cb, trg_cr)
+        return trg
+
+    def forward(self, x, star_strength=0, detail_strength=0, hubble_strength=0, use_cond=False, cond_strength=1, color_matching=False):
         c = self.stars * star_strength + self.detail * detail_strength  + self.hubble * hubble_strength  
         c = self.lrelu(self.l1(c.to(x.device).float())) if use_cond else None
     
-        x = self.conv_first(x)
+        x_primary = self.conv_first(x)
 
-        skip = self.conv_body(self.body([x, c, cond_strength])[0])
-        x = x + skip
+        skip = self.conv_body(self.body([x_primary, c, cond_strength])[0])
+        x_primary = x_primary + skip
         
-        x = self.lrelu(self.conv_up1(F.interpolate(x, scale_factor=2, mode='bilinear')))
-        x = self.lrelu(self.conv_up2(F.interpolate(x, scale_factor=2, mode='bilinear')))
+        x_primary = self.lrelu(self.conv_up1(F.interpolate(x_primary, scale_factor=2, mode='bilinear')))
+        x_primary = self.lrelu(self.conv_up2(F.interpolate(x_primary, scale_factor=2, mode='bilinear')))
 
-        out = self.conv_last(self.lrelu(self.conv_hr(x)))
-        return out
+        out = self.conv_last(self.lrelu(self.conv_hr(x_primary)))
+        if color_matching:
+            return self.color_matching(x, out)
+        else:
+            return out
