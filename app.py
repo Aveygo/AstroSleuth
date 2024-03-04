@@ -5,6 +5,7 @@ from streamlit.web.server.websocket_headers import _get_websocket_headers
 from PIL import Image
 import time, threading, io, warnings, argparse, json, os
 from os import listdir
+from importlib import import_module
 
 from file_queue import FileQueue
 from main import AstroSleuth
@@ -106,10 +107,12 @@ class App:
         st.write(f"{model_name}: {models[model_name]['description']}")
 
         # Load extra model inputs
-        extra_inputs = {}
-        for module in models[model_name].get("extra_inputs", []):
-            mod = eval(module["module"])
-            extra_inputs[module["name"]] = mod(**module["args"])
+        if "extra_streamlit" in models[model_name]:
+            module = getattr(
+                import_module(models[model_name]["extra_streamlit"].split("/")[0]),
+                models[model_name]["extra_streamlit"].split("/")[1]
+            )
+            extra_inputs = module()
 
         # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):
