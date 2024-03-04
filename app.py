@@ -117,7 +117,7 @@ class App:
 
         # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):
-            file = st.file_uploader("FILE UPLOADER", type=["png", "jpg", "jpeg"])
+            file = st.file_uploader("FILE UPLOADER", type=["png", "jpg", "jpeg", "tiff"])
             submitted = st.form_submit_button("Upscale!")
         
         if submitted and file is not None:
