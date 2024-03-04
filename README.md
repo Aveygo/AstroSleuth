@@ -44,15 +44,19 @@ If you ever want to support the project, please give the repo a star so that it'
 ### Hugging face - Good for testing/playing around
 1. Go [here](https://huggingface.co/spaces/Aveygo/AstroSleuth). Please note that hugging face servers use 2 core cpus and that you'll likely be sharing so large images may take a while.
 
-### Locally ( Binaries ) - Good for fast inference and 'bare minimum' needs
-1. Go to the [releases](https://github.com/Aveygo/AstroSleuth/releases) page 
+### Locally ( Binaries ) - Not recommended, but good for fast inference and 'bare minimum' needs
+1. Go to the [binary releases](https://github.com/Aveygo/AstroSleuth/releases/tag/v0.1.0) 
 2. Download the latest zip for your platform, eg: astrosleuth-v0.1.0-windows.zip
 3. Unzip and enter the folder
-4. If on windows, double click ```run.bat``` and follow from there
+4. To add additional models, download the ".bin" and ".param" file from a model release, eg [FAST](https://github.com/Aveygo/AstroSleuth/releases/tag/FAST)  and place them in the "models/" directory. Use them with the "-n" tag, eg ```-n AstroSleuthFAST``` for step 6.
+
+### Locally ( Binaries, continued ) - Windows
+5. To run, double click ```run.bat``` and follow from there.
+6. If you want to change the model, edit run.bat, line 50, to match step 4.
 
 ### Locally ( Binaries, continued ) - Linux/Macos
-4. Set executable permissions with ```sudo chmod +x astrosleuth```
-5. Run with ```./astrosleuth -n astrosleuth -i [input image path] -o [output path]```
+5. Set executable permissions with ```sudo chmod +x astrosleuth```
+6. Run with ```./astrosleuth -n astrosleuth -i [input image path] -o [output path]```
 
 ## Extra information
 

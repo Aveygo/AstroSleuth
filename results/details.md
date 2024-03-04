@@ -21,7 +21,6 @@ I unfortunately have to recommend *not* having diffraction spikes in the input i
 2.  "Crushed" image -> +upscale -> +upscale -> Output
 
 
-
 ### Workflow result on original/sample2.png
 
 | Raw AstroSleuthV2  | Workflow with V2  |  Workflow with V1  |

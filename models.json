@@ -47,7 +47,31 @@
             "src": {
                 "url": "https://github.com/Aveygo/AstroSleuth/releases/download/NEXT/AstroSleuthNEXT.pth",
                 "module": "modules.next/Network"
-            }
+            },
+            "extra_inputs": [
+                {
+                    "name": "detail_strength",
+                    "module": "st.slider",
+                    "args": {
+                        "label": "Detail Strength", 
+                        "min_value":-10.0, 
+                        "max_value":10.0, 
+                        "value":0.0, 
+                        "step":0.1
+                    }
+                },
+                {
+                    "name": "star_strength",
+                    "module": "st.slider",
+                    "args": {
+                        "label": "Star Strength", 
+                        "min_value":-10.0, 
+                        "max_value":10.0, 
+                        "value":0.0, 
+                        "step":0.1
+                    }
+                }
+            ]
         },
         "AstroSleuthFAST": {
             "description": "Speed first, denoise/deblur second. Predictable but sometimes suboptimal. Recommended as a post processing step after NEXT.",

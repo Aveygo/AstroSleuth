@@ -41,7 +41,7 @@ class App:
     def off_download(self):
         self.download_info.empty()
 
-    def upscale(self, image:Image, model_name:str)->Image.Image:
+    def upscale(self, image:Image, model_name:str, args:dict)->Image.Image:
         # Convert to RGB if not already
         image_rgb = Image.new("RGB", image.size, (255, 255, 255))
         image_rgb.paste(image)
@@ -58,7 +58,7 @@ class App:
 
         # Run the model, yield progress
         result = None
-        for i in model.enhance_with_progress(image_rgb):
+        for i in model.enhance_with_progress(image_rgb, args):
             if type(i) == float:
                 bar.progress(i)
             else:
@@ -105,6 +105,12 @@ class App:
 
         st.write(f"{model_name}: {models[model_name]['description']}")
 
+        # Load extra model inputs
+        extra_inputs = {}
+        for module in models[model_name].get("extra_inputs", []):
+            mod = eval(module["module"])
+            extra_inputs[module["name"]] = mod(**module["args"])
+
         # Show the file uploader and submit button
         with st.form("my-form", clear_on_submit=True):
             file = st.file_uploader("FILE UPLOADER", type=["png", "jpg", "jpeg"])
@@ -145,7 +151,7 @@ class App:
                 queue_box.empty()
 
             # Start the upscale
-            image = self.upscale(image, model_name)
+            image = self.upscale(image, model_name, extra_inputs)
 
             # Check if the upscale failed for whatever reason
             if image is None:

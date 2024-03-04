@@ -46,11 +46,11 @@ class AstroSleuth():
             if off_download is not None:
                 off_download()
 
-    def model_inference(self, x: np.ndarray):
+    def model_inference(self, x: np.ndarray, args:dict={}):
         x = torch.from_numpy(x).to(self.device)
-        return self.model(x).cpu().detach().numpy()
+        return self.model(x=x, **args).cpu().detach().numpy()
 
-    def tile_generator(self, data: np.ndarray, yield_extra_details=False):
+    def tile_generator(self, data: np.ndarray, yield_extra_details=False, args={}):
         """
         Process data [height, width, channel] into tiles of size [tile_size, tile_size, channel],
         feed them one by one into the model, then yield the resulting output tiles.
@@ -86,7 +86,7 @@ class AstroSleuth():
 
             input_tile = data[:, :, input_start_y_pad:input_end_y_pad, input_start_x_pad:input_end_x_pad].astype(np.float32) / 255
 
-            output_tile = self.model_inference(input_tile)
+            output_tile = self.model_inference(input_tile, args)
             self.progress = (i+1) / (tiles_y * tiles_x)
             
             output_start_x_tile = (input_start_x - input_start_x_pad) * self.scale
@@ -106,19 +106,19 @@ class AstroSleuth():
         yield None
     
     def load_model(self):
-        # Load model only now because when using streamlit, multiple users spawn multiple instances of this class, so 
-        # we only load the model when needed. The App() class is responsible for queuing requests to this class
         model:torch.nn.Module = self.model_module().to(self.device)
         model.load_state_dict(torch.load(self.model_pth, map_location=torch.device(self.device)), strict=False)
         model.eval()
         return model
 
-    def enhance_with_progress(self, image:Image):    
+    def enhance_with_progress(self, image:Image, args:dict={}):    
         """
         Take a PIL image and enhance it with the model, yielding stats about the
         final image and then the final image itself.
         """    
 
+        # Load model only now because when using streamlit, multiple users spawn multiple instances of this class, so 
+        # we only load the model when needed. The App() class is responsible for queuing requests to this class
         self.model = self.load_model()
         original_width, original_height = image.size
 
@@ -129,7 +129,7 @@ class AstroSleuth():
         # Initiate a pillow image to save the tiles
         result = Image.new("RGB", (image.shape[1]*self.scale, image.shape[0]*self.scale))
         
-        for i, tile in enumerate(self.tile_generator(image, yield_extra_details=True)):
+        for i, tile in enumerate(self.tile_generator(image, yield_extra_details=True, args=args)):
             
             if tile is None:
                 break
