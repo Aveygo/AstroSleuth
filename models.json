@@ -1,8 +1,9 @@
 {
     "meta": "Urls for different models",
     "data": {
-        "astrosleuthv1": {
-            "description": "The 'original' model. Trained for accuracy.",
+        "AstroSleuthV1": {
+            "description": "[SUNSET] The 'og' that started it all. Works fine for most cases. Superseded by PIXEL",
+            "sunset": true,
             "size": "20MB",
             "parameters": "4500000",
             "created": 1654229583,
@@ -10,14 +11,15 @@
             "scale": 4,
             "tile_size": 256,
             "tile_pad": 16,
-            "changelog": [],
+            "changelog": ["24/02/24 sunsetted"],
             "src": {
                 "url": "https://t.ly/_bgi",
                 "module": "modules.realesr/Network"
             }
         },
-        "astrosleuthv2": {
-            "description": "Great for complex targets, but may make up more details.",
+        "AstroSleuthV2": {
+            "description": "[SUNSET] Works well on more complex targets. Superseded by NEXT",
+            "sunset": true,
             "size": "20MB",
             "parameters": "4500000",
             "created": 1683087183,
@@ -25,11 +27,45 @@
             "scale": 4,
             "tile_size": 256,
             "tile_pad": 16,
-            "changelog": [],
+            "changelog": ["24/02/24 sunsetted"],
             "src": {
                 "url": "https://t.ly/9uQA",
                 "module": "modules.realesr/Network"
             }
+        },
+        "AstroSleuthNEXT": {
+            "description": "New conditionable architecture for guided results.",
+            "sunset": false,
+            "size": "20MB",
+            "parameters": "4500000",
+            "created": 1708858825,
+            "updated": 1708858825,
+            "scale": 4,
+            "tile_size": 256,
+            "tile_pad": 16,
+            "changelog": [],
+            "src": {
+                "url": "https://github.com/Aveygo/AstroSleuth/releases/download/NEXT/AstroSleuthNEXT.pth",
+                "module": "modules.next/Network"
+            },
+            "extra_streamlit": "modules.next/streamlit"
+        },
+        "AstroSleuthFAST": {
+            "description": "Speed first, denoise/deblur second. Predictable but sometimes suboptimal. Recommended as a post processing step after NEXT.",
+            "sunset": false,
+            "size": "5MB",
+            "parameters": "1200000",
+            "created": 1708897074,
+            "updated": 1708897074,
+            "scale": 4,
+            "tile_size": 256,
+            "tile_pad": 16,
+            "changelog": ["24/03/05 Finetuned on mse loss rather than huber"],
+            "src": {
+                "url": "https://github.com/Aveygo/AstroSleuth/releases/download/FAST/AstroSleuthFAST.pth",
+                "module": "modules.fast/SRVGGModified"
+            }
         }
+
     }
 }

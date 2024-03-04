@@ -2,4 +2,10 @@
 *.onnx
 *.cktp
 *.pth
+*.bin
+*.param
+*.pth
 queue
+
+ncnnoptimize
+onnx2ncnn
