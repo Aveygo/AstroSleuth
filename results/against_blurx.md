@@ -14,9 +14,11 @@ I believe that the results of NEXT outperforms BlurXTerminator, as well as produ
 
 
 ## Denoising
-Denoising is a little more difficult to judge. This is because I had to turn off YR/CB upsampling for a decent result, displaying NEXT's biggest flaw; color matching. While I think the "per-pixel" quality is better, NoiseX is certainly more faithful to the original. Only AstroSleuthV1 was able to perform in a similar manner to NoiseX within my suite. 
+Denoising is a little more difficult to judge. This is because I had to turn off YR/CB upsampling for a decent result, displaying NEXT's biggest flaw; color matching. While I think the "per-pixel" quality is better, NoiseX is certainly more faithful to the original. Only AstroSleuthV1 was able to perform the most similar manner to NoiseX within my suite. 
 
-One theortical solution is this is to use V1's YR/CB color channels and combine them into NEXT's luminance for the most optimal result, but again, this is a band aid fix on a fundamental problem of NEXT. 
+One theortical solution is this is to use V1's YR/CB color channels and combine them into NEXT's luminance for the most optimal result, but again, this is a band aid fix on a unfortunately fundamental problem of NEXT. 
+
+**[2023/3/4] Note: fixed the color bug substantially by switching to a better detail condition embeddings**
 
 | Original  | RC-Astro  | AstroNEXT |
 | --- | --- | --- |
