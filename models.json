@@ -34,7 +34,7 @@
             }
         },
         "AstroSleuthNEXT": {
-            "description": "New conditionable architecture for 'artificial' results. Perfect if your image looks better smothered in vaseline.",
+            "description": "New conditionable architecture for guided results.",
             "sunset": false,
             "size": "20MB",
             "parameters": "4500000",
@@ -60,7 +60,7 @@
             "scale": 4,
             "tile_size": 256,
             "tile_pad": 16,
-            "changelog": [],
+            "changelog": ["24/03/05 Finetuned on mse loss rather than huber"],
             "src": {
                 "url": "https://github.com/Aveygo/AstroSleuth/releases/download/FAST/AstroSleuthFAST.pth",
                 "module": "modules.fast/SRVGGModified"

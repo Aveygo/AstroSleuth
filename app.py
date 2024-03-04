@@ -155,7 +155,9 @@ class App:
                 queue_box.empty()
 
             # Start the upscale
+            a = time.time()
             image = self.upscale(image, model_name, extra_inputs)
+            print(f"Upscale took {time.time() - a:.4f} seconds")
 
             # Check if the upscale failed for whatever reason
             if image is None:

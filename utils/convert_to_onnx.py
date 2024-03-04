@@ -18,7 +18,7 @@ sys.path.append('.')
 from main import AstroSleuth
 import torch, os
 
-src = "AstroSleuthNEXT"
+src = "AstroSleuthFAST"
 astrosleuth = AstroSleuth(model_name = src)
 model = astrosleuth.load_model().cpu()
 
