@@ -129,13 +129,22 @@ def pixel_unshuffle(x, scale):
 def streamlit():
     detail_strength = 0.0
     star_strength = 0.0
-    cond_strength = 1.0
-    color_matching = st.toggle("Use color matching")
-    use_cond = st.toggle("Use conditioning")
+    cond_strength = 0.5
+
+    col1, col2 = st.columns([1,1])
+    with col1:
+        color_matching = st.toggle("Use color matching", help="Force the colors to match the input, not good for noisy inputs")
+    with col2:
+        use_cond = st.toggle("Use conditioning", help="Guide the model into specific styles")
+    
+    col1, col2, col3 = st.columns([1, 1, 1])
     if use_cond:
-        cond_strength = st.slider("Strength", 0.0, 5.0, 1.0, 0.1)
-        detail_strength = st.slider("Detail", -1.0, 1.0, 0.0, 0.1)
-        star_strength = st.slider("Stars", -1.0, 1.0, 0.0, 0.1)
+        with col1:
+            cond_strength = st.slider("Strength", 0.0, 5.0, 0.5, 0.1, help="How strong should the guiding be. Recommended less than 1 for suble effects.")
+        with col2:
+            detail_strength = st.slider("Detail", -1.0, 1.0, 0.0, 0.1, help="Controls the amount of fine details, may introduce noise if too high.")
+        with col3:
+            star_strength = st.slider("Stars", -1.0, 1.0, 0.0, 0.1, help="Controls the amount of additional stars in the output.")
         
     return {
         "detail_strength": detail_strength, 
