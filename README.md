@@ -10,6 +10,8 @@ pinned: false
 license: gpl-2.0
 ---
 
+<!--Note, git push HuggingFace-->
+
 # AstroSleuth
 
 <p align="center">
