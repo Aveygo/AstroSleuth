@@ -9,7 +9,16 @@
 2. In a terminal, run ```docker run -it -p 8501:8501 --gpus all --ipc=host registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py -- --ignore_hf```
 4. Go to [127.0.0.1:8501](http://127.0.0.1:8501)
 
-### Locally (Python) - Highly recommended, especially for experienced users
+### Locally (chaiNNer) - Highly recommended for new users
+<!--Onnx not recommended as it doesnt play nice with anything other than a CPU or Nvidia GPU-->
+1. Download [chaiNNer](https://github.com/chaiNNer-org/chaiNNer) and run it.
+2. On the left, scroll down to "dependency manager", and install the NCNN package
+3. Download [NCNN.chn](https://raw.githubusercontent.com/Aveygo/AstroSleuth/master/chainner/NCNN.chn) and open it in chaiNNer (file -> open)
+4. Download your desired model in the ```.bin``` **AND** ```.param``` format from [releases](https://github.com/Aveygo/AstroSleuth/releases). Make sure the model files are placed next to each other. 
+5. In chaiNNer, select your image, the model ```.param``` file, and output folder/filename.
+6. Hit the green play button at the top.
+
+### Locally (Python) - Highly recommended for experienced users
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
 2. Follow the instructions on the [pytorch](https://pytorch.org/get-started/locally/) website to install pytorch.
 3. Download and unzip the latest [release](https://github.com/Aveygo/AstroSleuth/archive/refs/heads/master.zip) of AstroSleuth
