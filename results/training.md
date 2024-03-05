@@ -1,7 +1,6 @@
 # Training details
 
 ## Dataset
-
 Each model (so far) has been trained from a variety of sources, including:
  - [AstroBin](https://welcome.astrobin.com/)
  - [NASA](https://www.nasa.gov/multimedia/imagegallery/index.html)
@@ -19,12 +18,11 @@ At the time I didn't realise it, but the training had actually failed as the dis
 Identifying that V1 could see some improvements on the discriminator front, I wrote my own pipeline and used a [projected discriminator](https://github.com/autonomousvision/projected-gan) as it seems to perform well in low-compute environments. I also trained a custom VGG model for the perceptual loss to better fit the dataset, and used clip as kind of a shot-in-the-dark. The biggest difficulty was balancing all these loss function's weights, as making one too large would result in the generator abusing it and throwing the rest off.
 
 ## AstroSleuthNEXT 
-
-This model was founded on a completely different basis from the first two. Rather than trying to fight against 3 (or more) different loss functions, the discriminator was set with this responsibility. 
+This model was founded on a completely different basis from the first two. Rather than trying to fight against 3 (or more) different loss functions, a larger discriminator was set with this responsibility. 
 
 This does result in some undesired effects, notably some color or structural artifacts, which is why I also added conditioning to the model to try and mitigate this. You can see some results in [against blurx](against_blurx.md) and [conditioning](conditioning.md).
 
-An important note is that conditioning does not work with ncnn (the binary release), as layer normalization is not yet supported.  
+*An important note is that conditioning does not work with ncnn (the binary release), as layer normalization is not yet supported.*
 
 ## AstroSleuthFAST
 A VGG based upscaler, which is borrows from the realesr repo. Despite being a quarter the size of V1, it performs similarly, but admittedly suffers from worse high-frequency detail and some star "shadows". 
