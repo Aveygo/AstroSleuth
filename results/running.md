@@ -6,7 +6,7 @@
 
 ### Locally (Docker) - Somewhat recommended, may not have most recent features
 1. Download [docker](https://www.docker.com/products/docker-desktop/)
-2. In a terminal, run ```docker run -p 7860:7860 --gpus all --rm -ti --ipc=host aveygo/astrosleuth:experimental```
+2. In a terminal, run ```sudo docker run -it -p 7860:7860 registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py```
 4. Go to [127.0.0.1:7860](http://127.0.0.1:7860)
 
 ### Locally (Python) - Highly recommended, especially for experienced users
