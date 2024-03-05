@@ -6,8 +6,8 @@
 
 ### Locally (Docker) - Somewhat recommended, may not have most recent features
 1. Download [docker](https://www.docker.com/products/docker-desktop/)
-2. In a terminal, run ```sudo docker run -it -p 7860:7860 registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py```
-4. Go to [127.0.0.1:7860](http://127.0.0.1:7860)
+2. In a terminal, run ```docker run -it -p 8501:8501 --gpus all --ipc=host registry.hf.space/aveygo-astrosleuth:latest streamlit run app.py -- --ignore_hf```
+4. Go to [127.0.0.1:8501](http://127.0.0.1:8501)
 
 ### Locally (Python) - Highly recommended, especially for experienced users
 1. Install [python](https://www.python.org/downloads/) (and [pip](https://phoenixnap.com/kb/install-pip-windows))
