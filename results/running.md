@@ -13,7 +13,7 @@
 <!--Onnx not recommended as it doesnt play nice with anything other than a CPU or Nvidia GPU-->
 1. Download [chaiNNer](https://github.com/chaiNNer-org/chaiNNer) and run it.
 2. On the left, scroll down to "dependency manager", and install the NCNN package
-3. Download [NCNN.chn](https://raw.githubusercontent.com/Aveygo/AstroSleuth/master/chainner/NCNN.chn) and open it in chaiNNer (file -> open)
+3. Download [NCNN.chn](https://raw.githubusercontent.com/Aveygo/AstroSleuth/master/chainner/NCNN.chn) (right click, save as) and open it in chaiNNer (file -> open)
 4. Download your desired model in the ```.bin``` **AND** ```.param``` format from [releases](https://github.com/Aveygo/AstroSleuth/releases). Make sure the model files are placed next to each other. 
 5. In chaiNNer, select your image, the model ```.param``` file, and output folder/filename.
 6. Hit the green play button at the top.
