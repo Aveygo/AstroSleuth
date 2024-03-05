@@ -1,11 +1,14 @@
 ### TLDR
 
 1. Manually reduce the input image size and upscale twice to get better results
-2. AstroSleuthV1 generally works better for smoother results, V2 for anything else
-3. Don't be afraid to add noise or blur the input image to potentially improve results
-4. Diffraction spikes are almost always troublesome
+2. Don't be afraid to add noise or blur the input image to potentially improve results
+3. For NEXT, set the strength of the conditioning to 1, detail to 1, stars to 0.
 
-## Tips, Tricks & Issues
+## Conditioning
+
+Experiments with NEXT and conditioning are ongoing. My current advice is to set the strength of the conditioning to 1, details to 1 and stars to 0, however, I typically see that trying to remove stars also removes *some* detail. I also am not sure if I will keep/update these embeddings for better alternatives, or (more likely) add more options. For now though, this is mostly unexplored for **you** to experiment on a per-image basis.
+
+## Crushing
 
 The model that tries to improve the image is trained on really noisy and blurry inputs. If the input image is too clean, you may get artifacts and sub-par performance. That is why I recommended making the image *worse* by manually adding blur/noise/downscaling with an image processing tool such as gimp or photoshop. 
 
@@ -35,3 +38,4 @@ https://www.reddit.com/r/astrophotography/comments/12fnhb3/m35_and_ngc_2158/
 https://www.reddit.com/r/astrophotography/comments/12flzf1/messier_106_in_lrgb/
 https://www.reddit.com/r/astrophotography/comments/12febjp/orion_nebula/
 https://www.reddit.com/r/astrophotography/comments/12fewff/northwestern_cygnus_nebulae/
+
