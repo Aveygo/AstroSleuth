@@ -13,7 +13,7 @@
             "tile_pad": 16,
             "changelog": ["24/02/24 sunsetted"],
             "src": {
-                "url": "https://t.ly/_bgi",
+                "url": "",
                 "module": "modules.realesr/Network"
             }
         },
@@ -29,7 +29,7 @@
             "tile_pad": 16,
             "changelog": ["24/02/24 sunsetted"],
             "src": {
-                "url": "https://t.ly/9uQA",
+                "url": "",
                 "module": "modules.realesr/Network"
             }
         },
@@ -45,7 +45,7 @@
             "tile_pad": 16,
             "changelog": [],
             "src": {
-                "url": "https://github.com/Aveygo/AstroSleuth/releases/download/NEXT/AstroSleuthNEXT.pth",
+                "url": "",
                 "module": "modules.next/Network"
             },
             "extra_streamlit": "modules.next/streamlit"
@@ -62,7 +62,7 @@
             "tile_pad": 16,
             "changelog": ["24/03/05 Finetuned on mse loss rather than huber"],
             "src": {
-                "url": "https://github.com/Aveygo/AstroSleuth/releases/download/FAST/AstroSleuthFAST.pth",
+                "url": "",
                 "module": "modules.fast/SRVGGModified"
             }
         }

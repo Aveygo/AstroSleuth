@@ -7,5 +7,7 @@
 *.pth
 queue
 
+models/
+
 ncnnoptimize
 onnx2ncnn
