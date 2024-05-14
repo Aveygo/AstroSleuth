@@ -7,7 +7,7 @@ sdk: streamlit
 sdk_version: 1.17.0
 app_file: app.py
 pinned: false
-license: gpl-2.0
+license: gpl-3.0
 ---
 
 <!--Note, git push HuggingFace-->
