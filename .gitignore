@@ -5,6 +5,7 @@
 *.bin
 *.param
 *.pth
+shell.nix
 queue
 
 models/
