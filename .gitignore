@@ -5,6 +5,7 @@
 *.bin
 *.param
 *.pth
+.vscode
 shell.nix
 queue
 
