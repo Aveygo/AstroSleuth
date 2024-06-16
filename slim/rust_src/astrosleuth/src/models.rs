@@ -4,14 +4,22 @@ use candle_nn::VarBuilder;
 use candle_core::utils::{cuda_is_available, metal_is_available};
 use candle_core::Result as CandleResult;
 
-use image::{DynamicImage, GenericImageView};
+use std::io::{Write,stdout};
+
+use image::{DynamicImage, GenericImageView, Rgba, GenericImage};
 use image;
 use core::str::FromStr;
+use std::time::Instant;
+
 pub mod realesr;
+pub mod srvggish;
+pub mod next;
 
 #[derive(Debug, Clone)]
 pub enum Model {
     RealESRGAN(realesr::RealESRGAN),
+    SRVGGISH(srvggish::SRVGGISH),
+    Next(next::Next)
 }
 
 pub fn device(cpu: bool) -> CandleResult<Device> {
@@ -44,13 +52,48 @@ impl FromStr for Model {
                 };
 
                 let vb = unsafe { 
-                    VarBuilder::from_mmaped_safetensors(&["model.safetensors"], DType::F32, &device(false).unwrap())
+                    VarBuilder::from_mmaped_safetensors(&["models/astrosleuthv1.safetensors"], DType::F32, &device(false).unwrap())
                         .map_err(|e| e.to_string()).unwrap() 
                 };
 
                 let model = realesr::RealESRGAN::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
                 Ok(Model::RealESRGAN(model))
             },
+            "astrosleuthfast" => {
+                let config = srvggish::SRVGGISHConfig {
+                    num_feat: 64,
+                    num_conv: 32,
+                    num_in_ch: 3,
+                    num_out_ch: 3,
+                };
+
+                let vb = unsafe { 
+                    VarBuilder::from_mmaped_safetensors(&["models/astrosleuthfast.safetensors"], DType::F32, &device(false).unwrap())
+                        .map_err(|e| e.to_string()).unwrap() 
+                };
+
+                let model = srvggish::SRVGGISH::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
+                Ok(Model::SRVGGISH(model))
+            },
+            "next" => {
+                let config = next::NextConfig {
+                    num_feat: 64,
+                    num_grow_ch: 32,
+                    num_in_ch: 3,
+                    num_out_ch: 3,
+                    num_block: 6,
+                };
+
+                let vb = unsafe { 
+                    VarBuilder::from_mmaped_safetensors(&["models/next.safetensors"], DType::F32, &device(false).unwrap())
+                        .map_err(|e| e.to_string()).unwrap() 
+                };
+
+                let model = next::Next::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
+                Ok(Model::Next(model))
+            },
+
+
             _ => Err(format!("Invalid model: {}", input)),
         }
     }
@@ -78,22 +121,62 @@ impl<'a> Worker<'a> {
         }
     }
 
+    pub fn add_padding(&self,image: &DynamicImage, padding: u32) -> DynamicImage {
+        let (width, height) = image.dimensions();
+        let new_width = width + 2 * padding;
+        let new_height = height + 2 * padding;
+    
+        // Create a new image with the desired size and a black background (or any color you prefer)
+        let mut padded_image = DynamicImage::new_rgb8(new_width, new_height);
+        for x in 0..new_width {
+            for y in 0..new_height {
+                padded_image.put_pixel(x, y, Rgba([0, 0, 0, 0]));
+            }
+        }
+    
+        // Copy the original image into the center of the new image
+        padded_image.copy_from(image, padding, padding).unwrap();
+    
+        padded_image
+    }
+
     pub fn upscale<P: AsRef<std::path::Path>>(&self, src: &P, dst: &P) {
+        let now = Instant::now();
+
         let mut image = image::io::Reader::open(src).unwrap().decode().unwrap();
         let (w, h) = image.dimensions();
         
+        // Ensure that the image can fit each tile
         let initial_w = w + self.tile_size - 1 - (w + self.tile_size - 1) % self.tile_size;
         let initial_h = h + self.tile_size - 1 - (h + self.tile_size - 1) % self.tile_size;
         image = image.resize_exact(initial_w, initial_h, image::imageops::FilterType::Lanczos3);
 
+        let slippage = 1. - (initial_w*initial_h) as f32 / (w*h) as f32;
+        println!("Started [{:?}x{:?}] -> [{:?}x{:?}] ({:.2}% match)", w, h, w*4, h*4, slippage);
+
+        // Add padding to ensure square tiles
+        let image = self.add_padding(&image, self.tile_pad);
+
         let mut result = self.process_tiles(&image);
+
+        // remove padding
+        let mut result = result.crop(
+            self.tile_pad * 4, 
+            self.tile_pad * 4, 
+            initial_w * 4, 
+            initial_h * 4
+        );
+
+
         result = result.resize_exact(w*4, h*4, image::imageops::FilterType::Lanczos3);
         result.save(dst).unwrap();
+        println!("Job took {:?} seconds", now.elapsed().as_secs());
     }
 
     pub fn inference(&self, img: DynamicImage) -> DynamicImage {
 
         let (w, h) = img.dimensions();
+        // println!("{:?}, {:?}", w, h);
 
         let img = img.to_rgb8();
         let x = img.into_raw();
@@ -104,10 +187,16 @@ impl<'a> Worker<'a> {
         match &self.model {
             Model::RealESRGAN(model) => {
                 y = model.forward(&x.to_device(&model.device).unwrap()).unwrap();
+            },
+            Model::SRVGGISH(model) => {
+                y = model.forward(&x.to_device(&model.device).unwrap()).unwrap();
+            },
+            Model::Next(model) => {
+                y = model.forward(&x.to_device(&model.device).unwrap()).unwrap();
             }
         }
         
-        y = y.squeeze(0).unwrap();
+        y = y.squeeze(0).unwrap().clamp(0.0, 1.0).unwrap();
         y = (y * 255.).unwrap().to_dtype(DType::U8).unwrap().clamp(0., 255.).unwrap();
         let (_, height, width) = y.dims3().unwrap();
         let img = y.permute((1, 2, 0)).unwrap().flatten_all().unwrap();
@@ -126,9 +215,15 @@ impl<'a> Worker<'a> {
         let (w, h) = image.dimensions();
         let mut result = DynamicImage::new_rgb8(w*4, h*4);
         let num_tiles = self.num_tiles(image);
+        println!("Total tiles: {:?}", num_tiles);
+
         for tile_id in 0..num_tiles {
             self.paste_tile(&mut result, self.get_tile_data(image, tile_id));
+            print!("{:.2}%\r", (tile_id as f32 / num_tiles as f32) * 100.);
+            let _ = stdout().flush();
         }
+        print!("100.00%\n");
+        let _ = stdout().flush();
 
         return result;
     }
@@ -177,8 +272,8 @@ impl<'a> Worker<'a> {
         let x = tile_id % tiles_y;
         let y = tile_id / tiles_y;
 
-        let input_start_x = y * self.tile_size;
-        let input_start_y = x * self.tile_size;
+        let input_start_x = y * self.tile_size + self.tile_pad;
+        let input_start_y = x * self.tile_size + self.tile_pad;
     
         let input_end_x = (input_start_x + self.tile_size).min(width);
         let input_end_y = (input_start_y + self.tile_size).min(height);

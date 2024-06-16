@@ -1,0 +1,154 @@
+{
+    "meta": {
+        "compatability": "0.1.0",
+        "model_dir": "models/"
+    },
+    "model_configs": [
+        {
+            "name": "AstroSleuthV1",
+            "description": "[SUNSET] The 'og' that started it all. Works fine for most cases. Superseded by NEXT",
+            "sunset": true,
+            "meta": {
+                "size": "20MB",
+                "parameters": "4500000",
+                "created": 1654229583,
+                "updated": 1654229583,
+                "changelog": ["24/02/24 sunsetted"]
+            },
+            "config": {
+                "scale": 4,
+                "tile_size": 256,
+                "tile_pad": 16
+            },
+            "modules": {
+                "python": {
+                    "src": "modules.realesr/Network",
+                    "config": null
+                },
+                "rust": {
+                    "src": "realesrgan",
+                    "config": {
+                        "num_feat": 64,
+                        "num_grow_ch": 32,
+                        "num_in_ch": 3,
+                        "num_out_ch": 3,
+                        "num_block": 6
+                    }
+                }
+            },
+            
+            "src": {
+                "bin": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v1/AstroSleuthV1.bin"},
+                "onnx": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v1/AstroSleuthV1.onnx"},
+                "param": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v1/AstroSleuthV1.param"},
+                "pth": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v1/AstroSleuthV1.pth"},
+                "safetensors": {"url": null}
+            }
+        },
+        {
+            "name": "AstroSleuthV2",
+            "description": "[SUNSET] Works well on more complex targets. Superseded by NEXT",
+            "sunset": true,
+            "meta": {
+                "size": "20MB",
+                "parameters": "4500000",
+                "created": 1683087183,
+                "updated": 1683087183,
+                "changelog": ["24/02/24 sunsetted"]
+            },
+            "config": {
+                "scale": 4,
+                "tile_size": 256,
+                "tile_pad": 16
+            },
+            "modules": {
+                "python": {
+                    "src": "modules.realesr/Network",
+                    "config": null
+                },
+                "rust": {
+                    "src": "realesrgan",
+                    "config": {
+                        "num_feat": 64,
+                        "num_grow_ch": 32,
+                        "num_in_ch": 3,
+                        "num_out_ch": 3,
+                        "num_block": 6
+                    }
+                }
+            },
+            
+            "src": {
+                "bin": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v2/AstroSleuthV2.bin"},
+                "onnx": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v2/AstroSleuthV2.onnx"},
+                "param": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v2/AstroSleuthV2.param"},
+                "pth": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v2/AstroSleuthV2.pth"},
+                "safetensors": {"url": null}
+            }
+        },
+        {
+            "name": "AstroSleuthFAST",
+            "description": "Speed first, denoise/deblur second. Predictable but sometimes suboptimal. Recommended as a post processing step after NEXT.",
+            "sunset": false,
+            "meta": {
+                "size": "5MB",
+                "parameters": "1200000",
+                "created": 1708897074,
+                "updated": 1708897074,
+                "changelog": ["24/03/05 Finetuned on mse loss rather than huber"]
+            },
+            "config": {
+                "scale": 4,
+                "tile_size": 256,
+                "tile_pad": 16
+            },
+            "modules": {
+                "python": {
+                    "src": "modules.fast/SRVGGModified",
+                    "config": null
+                },
+                "rust": null
+            },
+            
+            "src": {
+                "bin": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v3/AstroSleuthFAST.bin"},
+                "onnx": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v3/AstroSleuthFAST.onnx"},
+                "param": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v3/AstroSleuthFAST.param"},
+                "pth": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v3/AstroSleuthFAST.pth"},
+                "safetensors": {"url": null}
+            }
+        },
+        {
+            "name": "AstroSleuthNEXT",
+            "description": "New conditionable architecture for guided results.",
+            "sunset": false,
+            "meta": {
+                "size": "20MB",
+                "parameters": "4500000",
+                "created": 1708858825,
+                "updated": 1708858825,
+                "changelog": []
+            },
+            "config": {
+                "scale": 4,
+                "tile_size": 256,
+                "tile_pad": 16
+            },
+            "modules": {
+                "python": {
+                    "src": "modules.next/Network",
+                    "config": null
+                },
+                "rust": null
+            },
+            
+            "src": {
+                "bin": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v4/AstroSleuthNEXT.bin"},
+                "onnx": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v4/AstroSleuthNEXT.onnx"},
+                "param": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v4/AstroSleuthNEXT.param"},
+                "pth": {"url": "https://github.com/Aveygo/AstroSleuth/releases/download/v4/AstroSleuthNEXT.pth"},
+                "safetensors": {"url": null}
+            }
+        }
+    ]
+}

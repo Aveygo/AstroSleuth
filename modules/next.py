@@ -245,3 +245,16 @@ class Network(nn.Module):
             return self.color_matching(x, out)
         else:
             return out
+
+if __name__ == "__main__":
+    import json
+    network = Network()
+
+    data = {}
+    data["average"] = network.average.tolist()
+    data["detail"] = network.detail.tolist()
+    data["spikes"] = network.spikes.tolist()
+    data["stars"] = network.stars.tolist()
+
+    with open('next_conds.json', 'w') as f:
+        json.dump(data, f)

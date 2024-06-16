@@ -1,7 +1,7 @@
 use clap::Parser;
 
 mod cli;
-mod screens;
+mod tui;
 mod models;
 
 fn main() {
@@ -13,6 +13,6 @@ fn main() {
             worker.upscale(&cmd_args.src, &cmd_args.dst);
         } 
         Some(cli::Commands::List(cmd_args)) => {println!("{:?}", cmd_args)}
-        None => {screens::tui().unwrap();}
+        None => {tui::tui();}
     }
 }
