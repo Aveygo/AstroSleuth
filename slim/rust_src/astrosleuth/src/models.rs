@@ -17,8 +17,6 @@ pub mod next;
 pub mod lrelu;
 pub mod bilinear;
 
-
-
 #[derive(Debug, Clone)]
 pub enum Model {
     RealESRGAN(realesr::RealESRGAN),
@@ -171,10 +169,11 @@ impl<'a> Worker<'a> {
             initial_h * 4
         );
 
+        println!("Job took {:?} seconds", now.elapsed().as_secs());
 
         result = result.resize_exact(w*4, h*4, image::imageops::FilterType::Lanczos3);
         result.save(dst).unwrap();
-        println!("Job took {:?} seconds", now.elapsed().as_secs());
+        println!("Finished in {:?} seconds", now.elapsed().as_secs());
     }
 
     pub fn inference(&self, img: DynamicImage) -> DynamicImage {

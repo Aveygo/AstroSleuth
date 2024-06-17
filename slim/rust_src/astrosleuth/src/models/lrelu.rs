@@ -1,4 +1,4 @@
-use candle_core::{cpu_backend, CpuStorage, CustomOp1, DType, Device, Error, Layout, Shape, CudaStorage};
+use candle_core::{cpu_backend, CpuStorage, CudaStorage, CustomOp1, DType, Device, Error, Layout, Shape};
 
 use candle_core::cuda_backend::{WrapErr, CudaStorageSlice, CudaError};
 use candle_core::backend::BackendStorage;
@@ -105,4 +105,5 @@ impl CustomOp1 for LRelu {
             .w()?,
         }
     }
+
 }

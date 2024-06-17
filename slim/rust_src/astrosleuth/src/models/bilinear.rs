@@ -4,7 +4,7 @@ use candle_core::Result as CandleResult;
 
 use cudarc::driver::{LaunchAsync, LaunchConfig, CudaFunction};
 
-pub fn bilinear_interpolate(
+pub fn _bilinear_interpolate(
     input_tensor: &Tensor,
     new_width: usize,
     new_height: usize

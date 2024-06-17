@@ -39,7 +39,6 @@ impl LayerNormCL {
     }
 }
 
-
 #[derive(Clone)]
 struct GRN {
     gamma: Tensor,
@@ -87,12 +86,12 @@ impl GRN {
 }
 
 
+
 #[derive(Clone)]
 struct Block {
     dwconv: Conv2d,
     norm: LayerNormCL,
     pwconv1: Linear,
-    // act
     grn: GRN,
     pwconv2: Linear,
 }
@@ -108,7 +107,7 @@ impl Block {
         let dwconv = conv2d(config.num_feat, config.num_feat, 7, conv2d_cfg, vb.pp(format!("{}.dwconv", prefix))).unwrap();
         let norm = LayerNormCL::load(vb, &format!("{}.norm", prefix), config);
         let pwconv1 = linear(config.num_feat, 4 * config.num_feat, vb.pp(format!("{}.pwconv1", prefix))).unwrap();
-        // HERE -> GELU act
+        // Normally the GELU act would be here
         let grn = GRN::load(vb, &format!("{}.grn", prefix), config.num_feat * 4, true);
         let pwconv2 = linear(4 * config.num_feat, config.num_feat, vb.pp(format!("{}.pwconv2", prefix))).unwrap();
         
@@ -122,6 +121,9 @@ impl Block {
     }
 
     pub fn forward(&self, xs: &Tensor) -> Result<Tensor> {
+
+        // Performance: Looks like the "channel last" trick is slower here?
+
         let mut xs = self.dwconv.forward(&xs).unwrap();
         xs = xs.permute((0, 2, 3, 1)).unwrap();
         xs = self.norm.forward(&xs).unwrap();
@@ -133,6 +135,37 @@ impl Block {
         return Ok(xs)
     }
 }
+
+#[test]
+fn test_block() {
+    let device = Device::new_cuda(0).unwrap();
+
+    let var_map = candle_nn::VarMap::new();
+    let vb = VarBuilder::from_varmap(&var_map, candle_core::DType::F32, &device);
+
+    let config = NextConfig {
+        num_feat: 64,
+        num_grow_ch: 32,
+        num_in_ch: 3,
+        num_out_ch: 3,
+        num_block: 6
+    };
+
+    let block = Block::load(&vb, "block", &config);
+
+    // Warmup
+    for _i in 0..10 {
+        let x0 = Tensor::zeros((1, 64, 64, 64), candle_core::DType::F32, &device).unwrap();
+        let _ = block.forward(&x0);
+    }
+
+    let x0 = Tensor::zeros((1, 64, 64, 64), candle_core::DType::F32, &device).unwrap();
+    let start = std::time::Instant::now();
+    let _ = block.forward(&x0);
+
+    println!("Block {:?}", start.elapsed());
+}
+
 
 #[derive(Clone)]
 struct ResidualDenseBlock {
@@ -157,7 +190,6 @@ impl ResidualDenseBlock {
     }
 
     pub fn forward(&self, x: &Tensor) -> Result<Tensor> {
-
         let x1 = &self.conv1.forward(&x)?.apply_op1_no_bwd(&self.lrelu)?;
         let x2 = &self.conv2.forward(&Tensor::cat(&[x, &x1], 1).unwrap())?.apply_op1_no_bwd(&self.lrelu)?;
         let x3 = &self.conv3.forward(&Tensor::cat(&[x, &x1, &x2], 1).unwrap())?.apply_op1_no_bwd(&self.lrelu)?;
@@ -189,8 +221,8 @@ impl RRDB {
         Self { config, block, l1, rdb1, rdb2, rdb3 }
     }
 
-    pub fn forward(&self, x: &Tensor, c:&Tensor, scale:f32) -> Result<Tensor> {
-
+    pub fn forward(&self, x: &Tensor, c:&Tensor, scale:&Tensor) -> Result<Tensor> {
+        
         let condition = self.l1.forward(&c).unwrap();
         let (batch, _, _, _) = x.dims4().unwrap();
 
@@ -198,19 +230,15 @@ impl RRDB {
         let condition = condition.reshape((batch, self.config.num_feat, 1, 1)).unwrap();
 
         let x_mixed = x.broadcast_add(&condition).unwrap();
-        let scale = Tensor::from_vec(vec![0.1 * scale * 0.1], (batch, 1, 1, 1), x.device()).unwrap().repeat((1, self.config.num_feat, 1, 1)).unwrap();
         let features = self.block.forward(&x_mixed).unwrap();
         let features = features.broadcast_mul(&scale).unwrap();
-
+        
         let out = self.rdb1.forward(&(x + &features)?)?;
         let out = self.rdb2.forward(&(out + &features)?)?;
         let out = self.rdb3.forward(&(out + &features)?)?;
         out * 0.2 + x
     }
 }
-
-
-
 
 #[derive(Deserialize, Clone)]
 struct CondData {
@@ -220,9 +248,18 @@ struct CondData {
     stars: Vec<f32>,
 }
 
+#[derive(Clone)]
+struct TensorCondData {
+    average: Tensor,
+    detail: Tensor,
+    spikes: Tensor,
+    stars: Tensor,
+}
+
 
 #[derive(Clone)]
 pub struct Next {
+    config: NextConfig,
     l1: Linear,
     conv_first: Conv2d,
     body: Vec<RRDB>,
@@ -231,7 +268,7 @@ pub struct Next {
     conv_up2: Conv2d,
     conv_hr: Conv2d,
     conv_last: Conv2d,
-    cond_data: CondData,
+    cond_data: TensorCondData,
     lrelu: LRelu,
     up: BilinearInterpolation,
     pub device: Device,
@@ -265,8 +302,16 @@ impl Next {
         let up = BilinearInterpolation::new(device.clone()).unwrap();
 
         let cond_data = Next::load_json();
+        let cond_data = TensorCondData{
+            average: Tensor::from_vec(cond_data.average.clone(), (1, 512), &device).unwrap(),
+            detail: Tensor::from_vec(cond_data.detail.clone(), (1, 512), &device).unwrap(),
+            spikes: Tensor::from_vec(cond_data.spikes.clone(), (1, 512), &device).unwrap(),
+            stars: Tensor::from_vec(cond_data.stars.clone(), (1, 512), &device).unwrap(),
+        };
 
-        Ok(Self {l1, conv_first, body, conv_body, conv_up1, conv_up2, conv_hr, conv_last, cond_data, lrelu, up, device})
+        let config = config.clone();
+
+        Ok(Self {config, l1, conv_first, body, conv_body, conv_up1, conv_up2, conv_hr, conv_last, cond_data, lrelu, up, device})
     }
 
     fn load_json() -> CondData {
@@ -277,30 +322,21 @@ impl Next {
     }
 
     pub fn forward(&self, x: &Tensor) -> Result<Tensor> {
-
-        let mut feat = self.conv_first.forward(x)?;
-
-
-        let cond_avg = Tensor::from_vec(self.cond_data.average.clone(), (1, 512), x.device()).unwrap();
-        let _cond_det = Tensor::from_vec(self.cond_data.detail.clone(), (1, 512), x.device()).unwrap();
-        let _cond_spk = Tensor::from_vec(self.cond_data.spikes.clone(), (1, 512), x.device()).unwrap();
-        let _cond_str = Tensor::from_vec(self.cond_data.stars.clone(), (1, 512), x.device()).unwrap();
-
-        let cond: Tensor = cond_avg;
+        let cond = self.cond_data.average.clone();
         let cond = self.l1.forward(&cond).unwrap().reshape((1, 64, 1, 1)).unwrap().apply_op1_no_bwd(&self.lrelu)?.reshape((1, 64)).unwrap();
-
-        let body_feat = self.body.iter()
-            .fold(feat.clone(), |acc, block| block.forward(&acc, &cond, 1.).unwrap());
-
-
-        feat = (feat + self.conv_body.forward(&body_feat)?).unwrap();
+        
+        let scale = Tensor::from_vec(vec![(0.0) as f32], (1, 1, 1, 1), x.device()).unwrap().repeat((1, self.config.num_feat, 1, 1)).unwrap();
+        let mut feat = self.conv_first.forward(&x)?;
+        for block in self.body.iter() {
+            feat = block.forward(&feat, &cond, &scale).unwrap();
+        }
+        feat = (&feat + self.conv_body.forward(&feat)?).unwrap();
 
         feat = feat.apply_op1_no_bwd(&self.up)?;
         feat = self.conv_up1.forward(&feat).unwrap().apply_op1_no_bwd(&self.lrelu)?;
 
         feat = feat.apply_op1_no_bwd(&self.up)?;
         feat = self.conv_up2.forward(&feat).unwrap().apply_op1_no_bwd(&self.lrelu)?;
-
         self.conv_last.forward(&self.conv_hr.forward(&feat)?.apply_op1_no_bwd(&self.lrelu)?)
     }
 

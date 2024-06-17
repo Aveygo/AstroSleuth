@@ -2,25 +2,14 @@ use candle_core::{Result, Tensor, Device};
 use candle_nn::{Conv2d, conv2d, Conv2dConfig, VarBuilder, Module};
 use std::fmt;
 
+use crate::models::lrelu::LRelu;
+
 pub struct RealESRGANConfig {
     pub num_feat: usize,
     pub num_grow_ch: usize,
     pub num_in_ch: usize,
     pub num_out_ch: usize,
     pub num_block: usize,
-}
-
-struct LRelu;
-
-impl LRelu {
-    fn forward(input: &Tensor) -> Tensor {
-        let original_shape = input.shape();
-        let flat = input.flatten_all().unwrap().unsqueeze(0).unwrap();
-        let zero = flat.zeros_like().unwrap();
-        let joined = Tensor::cat(&[zero, flat], 0).unwrap();
-        let added = (joined.min(0).unwrap() * 0.2 + joined.max(0).unwrap()).unwrap();
-        added.reshape(original_shape).unwrap()
-    }
 }
 
 #[derive(Clone)]
@@ -30,24 +19,26 @@ struct ResidualDenseBlock {
     conv3: Conv2d,
     conv4: Conv2d,
     conv5: Conv2d,
+    lrelu: LRelu,
 }
 
 impl ResidualDenseBlock {
-    pub fn load(vb: &VarBuilder, prefix: &str, config: &RealESRGANConfig) -> ResidualDenseBlock {
+    pub fn load(vb: &VarBuilder, prefix: &str, config: &RealESRGANConfig, device:&Device) -> ResidualDenseBlock {
         let c = Conv2dConfig {stride: 1, padding: 1, dilation: 1, groups: 1};
         let conv1 = conv2d(config.num_feat + 0 * config.num_grow_ch, config.num_grow_ch, 3, c, vb.pp(&format!("{}.conv1", prefix))).unwrap();
         let conv2 = conv2d(config.num_feat + 1 * config.num_grow_ch, config.num_grow_ch, 3, c, vb.pp(&format!("{}.conv2", prefix))).unwrap();
         let conv3 = conv2d(config.num_feat + 2 * config.num_grow_ch, config.num_grow_ch, 3, c, vb.pp(&format!("{}.conv3", prefix))).unwrap();
         let conv4 = conv2d(config.num_feat + 3 * config.num_grow_ch, config.num_grow_ch, 3, c, vb.pp(&format!("{}.conv4", prefix))).unwrap();
         let conv5 = conv2d(config.num_feat + 4 * config.num_grow_ch, config.num_feat, 3, c, vb.pp(&format!("{}.conv5", prefix))).unwrap();
-        Self { conv1, conv2, conv3, conv4, conv5 }
+        let lrelu = LRelu::new(0.2, device.clone()).unwrap();
+        Self { conv1, conv2, conv3, conv4, conv5, lrelu }
     }
 
     pub fn forward(&self, x: &Tensor) -> Result<Tensor> {
-        let x1 = LRelu::forward(&self.conv1.forward(&x)?);
-        let x2 = LRelu::forward(&self.conv2.forward(&Tensor::cat(&[x, &x1], 1).unwrap())?);
-        let x3 = LRelu::forward(&self.conv3.forward(&Tensor::cat(&[x, &x1, &x2], 1).unwrap())?);
-        let x4 = LRelu::forward(&self.conv4.forward(&Tensor::cat(&[x, &x1, &x2, &x3], 1).unwrap())?);
+        let x1 = &self.conv1.forward(&x)?.apply_op1_no_bwd(&self.lrelu)?;
+        let x2 = &self.conv2.forward(&Tensor::cat(&[x, &x1], 1).unwrap())?.apply_op1_no_bwd(&self.lrelu)?;
+        let x3 = &self.conv3.forward(&Tensor::cat(&[x, &x1, &x2], 1).unwrap())?.apply_op1_no_bwd(&self.lrelu)?;
+        let x4 = &self.conv4.forward(&Tensor::cat(&[x, &x1, &x2, &x3], 1).unwrap())?.apply_op1_no_bwd(&self.lrelu)?;
         let x5 = self.conv5.forward(&Tensor::cat(&[x, &x1, &x2, &x3, &x4], 1).unwrap())?;
         x5 * 0.2 + x
     }
@@ -61,10 +52,10 @@ struct RRDB {
 }
 
 impl RRDB {
-    pub fn load(vb: &VarBuilder, prefix: &str, config: &RealESRGANConfig) -> RRDB {
-        let rdb1 = ResidualDenseBlock::load(vb, &format!("{}.rdb1", prefix), config);
-        let rdb2 = ResidualDenseBlock::load(vb, &format!("{}.rdb2", prefix), config);
-        let rdb3 = ResidualDenseBlock::load(vb, &format!("{}.rdb3", prefix), config);
+    pub fn load(vb: &VarBuilder, prefix: &str, config: &RealESRGANConfig, device:&Device) -> RRDB {
+        let rdb1 = ResidualDenseBlock::load(vb, &format!("{}.rdb1", prefix), config, &device);
+        let rdb2 = ResidualDenseBlock::load(vb, &format!("{}.rdb2", prefix), config, &device);
+        let rdb3 = ResidualDenseBlock::load(vb, &format!("{}.rdb3", prefix), config, &device);
         Self { rdb1, rdb2, rdb3 }
     }
 
@@ -86,6 +77,7 @@ pub struct RealESRGAN {
     conv_up2: Conv2d,
     conv_hr: Conv2d,
     conv_last: Conv2d,
+    lrelu: LRelu,
     pub device: Device,
 }
 
@@ -103,7 +95,7 @@ impl RealESRGAN {
         let conv_first = conv2d(config.num_in_ch, config.num_feat, 3, c, vb.pp("conv_first")).unwrap();
         
         let body = (0..config.num_block)
-            .map(|block_id| RRDB::load(vb, &format!("body.{}", block_id), config))
+            .map(|block_id| RRDB::load(vb, &format!("body.{}", block_id), config, &device))
             .collect();
 
         let conv_body = conv2d(config.num_feat, config.num_feat, 3, c, vb.pp("conv_body")).unwrap();
@@ -112,7 +104,9 @@ impl RealESRGAN {
         let conv_hr = conv2d(config.num_feat, config.num_feat, 3, c, vb.pp("conv_hr")).unwrap();
         let conv_last = conv2d(config.num_feat, config.num_out_ch, 3, c, vb.pp("conv_last")).unwrap();
 
-        Ok(Self {conv_first, body, conv_body, conv_up1, conv_up2, conv_hr, conv_last, device})
+        let lrelu = LRelu::new(0.2, device.clone()).unwrap();
+
+        Ok(Self {conv_first, body, conv_body, conv_up1, conv_up2, conv_hr, conv_last, lrelu, device})
     }
 
     pub fn forward(&self, x: &Tensor) -> Result<Tensor> {
@@ -123,17 +117,17 @@ impl RealESRGAN {
         
         feat = (feat + self.conv_body.forward(&body_feat)?).unwrap();
         
-        feat = LRelu::forward(&self.conv_up1.forward(&feat.upsample_nearest2d(
+        feat = self.conv_up1.forward(&feat.upsample_nearest2d(
             *feat.shape().dims().get(2).unwrap() * 2,
             *feat.shape().dims().get(3).unwrap() * 2,
-        )?)?);
+        )?)?.apply_op1_no_bwd(&self.lrelu)?;
 
-        feat = LRelu::forward(&self.conv_up2.forward(&feat.upsample_nearest2d(
+        feat = self.conv_up2.forward(&feat.upsample_nearest2d(
             *feat.shape().dims().get(2).unwrap() * 2,
             *feat.shape().dims().get(3).unwrap() * 2,
-        )?)?);
+        )?)?.apply_op1_no_bwd(&self.lrelu)?;
 
-        self.conv_last.forward(&LRelu::forward(&self.conv_hr.forward(&feat)?))
+        self.conv_last.forward(&self.conv_hr.forward(&feat)?.apply_op1_no_bwd(&self.lrelu)?)
     }
 
     
