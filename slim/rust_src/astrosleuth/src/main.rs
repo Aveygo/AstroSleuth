@@ -1,8 +1,11 @@
 use clap::Parser;
 
+mod test;
+
 mod cli;
 mod tui;
 mod models;
+
 
 fn main() {
 

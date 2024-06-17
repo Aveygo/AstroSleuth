@@ -14,6 +14,10 @@ use std::time::Instant;
 pub mod realesr;
 pub mod srvggish;
 pub mod next;
+pub mod lrelu;
+pub mod bilinear;
+
+
 
 #[derive(Debug, Clone)]
 pub enum Model {

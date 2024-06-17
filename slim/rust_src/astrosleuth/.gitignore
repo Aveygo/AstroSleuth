@@ -3,3 +3,5 @@
 *.jpeg
 *.jpg
 *.safetensors
+
+!src/models
