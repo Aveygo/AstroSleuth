@@ -1,9 +1,11 @@
 use candle_core::{Result, Tensor, Device};
 use candle_nn::{Conv2d, conv2d, Conv2dConfig, VarBuilder, Module};
+use serde::Deserialize;
 use std::fmt;
 
 use crate::models::lrelu::LRelu;
 
+#[derive(Debug, Clone, Deserialize)]
 pub struct RealESRGANConfig {
     pub num_feat: usize,
     pub num_grow_ch: usize,

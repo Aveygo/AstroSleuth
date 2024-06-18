@@ -1,10 +1,12 @@
 use candle_core::{Result, Tensor, Device};
 use candle_nn::{conv2d, prelu, Conv2d, Conv2dConfig, Module, PReLU, VarBuilder};
 use std::fmt;
+use serde::Deserialize;
 
 use crate::models::lrelu::LRelu;
 use crate::models::bilinear::BilinearInterpolation;
 
+#[derive(Debug, Clone, Deserialize)]
 pub struct SRVGGISHConfig {
     pub num_feat: usize,
     pub num_conv: usize,

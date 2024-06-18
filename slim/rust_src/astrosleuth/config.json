@@ -22,18 +22,10 @@
             },
             "modules": {
                 "python": {
-                    "src": "modules.realesr/Network",
-                    "config": null
+                    "src": "modules.realesr/Network"
                 },
                 "rust": {
-                    "src": "realesrgan",
-                    "config": {
-                        "num_feat": 64,
-                        "num_grow_ch": 32,
-                        "num_in_ch": 3,
-                        "num_out_ch": 3,
-                        "num_block": 6
-                    }
+                    "src": "realesrgan"
                 }
             },
             
@@ -63,18 +55,10 @@
             },
             "modules": {
                 "python": {
-                    "src": "modules.realesr/Network",
-                    "config": null
+                    "src": "modules.realesr/Network"
                 },
                 "rust": {
-                    "src": "realesrgan",
-                    "config": {
-                        "num_feat": 64,
-                        "num_grow_ch": 32,
-                        "num_in_ch": 3,
-                        "num_out_ch": 3,
-                        "num_block": 6
-                    }
+                    "src": "realesrgan"
                 }
             },
             
@@ -104,8 +88,7 @@
             },
             "modules": {
                 "python": {
-                    "src": "modules.fast/SRVGGModified",
-                    "config": null
+                    "src": "modules.fast/SRVGGModified"
                 },
                 "rust": null
             },
@@ -136,8 +119,7 @@
             },
             "modules": {
                 "python": {
-                    "src": "modules.next/Network",
-                    "config": null
+                    "src": "modules.next/Network"
                 },
                 "rust": null
             },

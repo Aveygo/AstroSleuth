@@ -4,7 +4,6 @@ mod cli;
 mod tui;
 mod models;
 
-
 fn main() {
 
     let args = cli::Cli::parse();
@@ -16,4 +15,5 @@ fn main() {
         Some(cli::Commands::List(cmd_args)) => {println!("{:?}", cmd_args)}
         None => {tui::tui();}
     }
+
 }

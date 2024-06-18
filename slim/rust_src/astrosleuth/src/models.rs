@@ -17,6 +17,8 @@ pub mod next;
 pub mod lrelu;
 pub mod bilinear;
 
+pub mod config;
+
 #[derive(Debug, Clone)]
 pub enum Model {
     RealESRGAN(realesr::RealESRGAN),
@@ -43,61 +45,81 @@ impl FromStr for Model {
     type Err = String;
 
     fn from_str(input: &str) -> Result<Model, String> {
-        match input.to_lowercase().as_str() {
-            "realesrgan" => {
-                let config = realesr::RealESRGANConfig {
-                    num_feat: 64,
-                    num_grow_ch: 32,
-                    num_in_ch: 3,
-                    num_out_ch: 3,
-                    num_block: 6,
-                };
+        
+        let input = input.to_lowercase();
 
-                let vb = unsafe { 
-                    VarBuilder::from_mmaped_safetensors(&["models/astrosleuthv1.safetensors"], DType::F32, &device(false).unwrap())
-                        .map_err(|e| e.to_string()).unwrap() 
-                };
+        let config = config::Config::new().unwrap();
+        let names = config.names();
+        let names:Vec<String> = names.into_iter().map(|s| s.to_lowercase()).collect();
 
-                let model = realesr::RealESRGAN::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
-                Ok(Model::RealESRGAN(model))
+        let index = names.iter().position(|r| *r == input);
+
+        match index {
+            Some(index) => {
+                // TODO load config from git release? 
+                match input.as_str() {
+                    "realesrgan" => {
+                        let config = realesr::RealESRGANConfig {
+                            num_feat: 64,
+                            num_grow_ch: 32,
+                            num_in_ch: 3,
+                            num_out_ch: 3,
+                            num_block: 6,
+                        };
+        
+                        let vb = unsafe { 
+                            VarBuilder::from_mmaped_safetensors(&["models/astrosleuthv1.safetensors"], DType::F32, &device(false).unwrap())
+                                .map_err(|e| e.to_string()).unwrap() 
+                        };
+        
+                        let model = realesr::RealESRGAN::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
+                        Ok(Model::RealESRGAN(model))
+                    },
+                    "astrosleuthfast" => {
+                        let config = srvggish::SRVGGISHConfig {
+                            num_feat: 64,
+                            num_conv: 32,
+                            num_in_ch: 3,
+                            num_out_ch: 3,
+                        };
+        
+                        let vb = unsafe { 
+                            VarBuilder::from_mmaped_safetensors(&["models/astrosleuthfast.safetensors"], DType::F32, &device(false).unwrap())
+                                .map_err(|e| e.to_string()).unwrap() 
+                        };
+        
+                        let model = srvggish::SRVGGISH::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
+                        Ok(Model::SRVGGISH(model))
+                    },
+                    "next" => {
+                        let config = next::NextConfig {
+                            num_feat: 64,
+                            num_grow_ch: 32,
+                            num_in_ch: 3,
+                            num_out_ch: 3,
+                            num_block: 6,
+                        };
+        
+                        let vb = unsafe { 
+                            VarBuilder::from_mmaped_safetensors(&["models/next.safetensors"], DType::F32, &device(false).unwrap())
+                                .map_err(|e| e.to_string()).unwrap() 
+                        };
+        
+                        let model = next::Next::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
+                        Ok(Model::Next(model))
+                    },
+        
+        
+                    _ => Err(format!("Invalid model config: {}", input)),
+                }
+
             },
-            "astrosleuthfast" => {
-                let config = srvggish::SRVGGISHConfig {
-                    num_feat: 64,
-                    num_conv: 32,
-                    num_in_ch: 3,
-                    num_out_ch: 3,
-                };
-
-                let vb = unsafe { 
-                    VarBuilder::from_mmaped_safetensors(&["models/astrosleuthfast.safetensors"], DType::F32, &device(false).unwrap())
-                        .map_err(|e| e.to_string()).unwrap() 
-                };
-
-                let model = srvggish::SRVGGISH::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
-                Ok(Model::SRVGGISH(model))
-            },
-            "next" => {
-                let config = next::NextConfig {
-                    num_feat: 64,
-                    num_grow_ch: 32,
-                    num_in_ch: 3,
-                    num_out_ch: 3,
-                    num_block: 6,
-                };
-
-                let vb = unsafe { 
-                    VarBuilder::from_mmaped_safetensors(&["models/next.safetensors"], DType::F32, &device(false).unwrap())
-                        .map_err(|e| e.to_string()).unwrap() 
-                };
-
-                let model = next::Next::load(&vb, &config).map_err(|e| e.to_string()).unwrap();
-                Ok(Model::Next(model))
-            },
-
-
-            _ => Err(format!("Invalid model: {}", input)),
+            None => {
+                return Err(format!("Invalid model: {}", input));
+            }
         }
+
+        
     }
 }
 

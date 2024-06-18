@@ -12,7 +12,7 @@ use std::io::BufReader;
 use crate::models::lrelu::LRelu;
 use crate::models::bilinear::BilinearInterpolation;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct NextConfig {
     pub num_feat: usize,
     pub num_grow_ch: usize,
